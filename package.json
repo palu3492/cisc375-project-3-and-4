@@ -1,0 +1,26 @@
+{
+  "name": "cisc375-project3-restful-server",
+  "version": "1.0.0",
+  "description": "CISC 375-01 Web Dev, Project 3 - RESTful Server",
+  "author": {
+    "name": "Alex Palumbo",
+    "email": "palu3492@stthomas.edu"
+  },
+  "contributors": [
+    {
+      "name": "Alex Palumbo",
+      "email": "palu3492@stthomas.edu"
+    },
+    {
+      "name": "Daniel Taufiq",
+      "email": ""
+    }
+  ],
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/palu3492/CISC375-Project3-RESTful-Server.git"
+  },
+  "dependencies": {
+  }
+}
