@@ -22,5 +22,7 @@
     "url": "https://github.com/palu3492/CISC375-Project3-RESTful-Server.git"
   },
   "dependencies": {
+    "express": "^4.17.1",
+    "sqlite3": "^4.1.0"
   }
 }
