@@ -1,8 +1,8 @@
 // Built-in Node.js modules
 // var fs = require('fs');
 let path = require('path');
-let bodyParser = require('body-parser');
-let xmlConverter = require('xml-js');
+let bodyParser = require('body-parser'); // For parsing params in requests
+let xmlConverter = require('xml-js'); // For converting JS objects to XML
 
 // NPM modules
 let express = require('express');
@@ -14,6 +14,7 @@ let db_filename = path.join(__dirname, 'database', 'stpaul_crime.sqlite3');
 
 let app = express();
 app.use(bodyParser.urlencoded({extended: true}));
+
 let port = 8000;
 
 // open usenergy.sqlite3 database
@@ -55,107 +56,211 @@ function testSql(){
 // ?code=110,700, default all codes
 // ?format=xml, default json
 app.get('/codes', (req, res) => {
-    let format = req.query.format;
-    let sql = 'SELECT * FROM Codes';
-    let code = req.query.code;
-    if(code){ // check if code was supplied
-        let codes = code.split(',');
+    let formatParam = req.query.format;
+    let codeParam = req.query.code;
+
+    let sqlQuery = buildSqlQueryForCodes(codeParam);
+    writeResponse(res, sqlQuery, getCodesObjectFromRows, formatParam);
+});
+
+function buildSqlQueryForCodes(codeParam){
+    let sql, codes;
+    // Build SQL query using optional 'code' URL param
+    sql = 'SELECT * FROM Codes';
+    if(codeParam){ // if 'code' URL param was supplied
+        codes = codeParam.split(',');
         sql += ' WHERE code = ' + codes.join(' OR code = ');
     }
     sql += ' ORDER BY code ASC';
-    console.log(sql);
-    // with code param = SELECT * FROM Codes WHERE code = 110 OR code = 313 OR code = 941 ORDER BY code ASC
-    // with NO code param = SELECT * FROM Codes ORDER BY code ASC
-    db.all(sql, (err, rows) => {
-        let code, incidentType, response;
-        let codes = {};
-        rows.forEach(row => {
-            code = row['code'];
-            incidentType = row['incident_type'];
-            codes[code] = incidentType;
-        });
-        if(format === 'XML'){
-            response = xmlConverter.js2xml(codes, {compact: false, spaces: 4});
-            res.writeHead(200, {'Content-Type': 'application/xml'});
-        } else {
-            response = JSON.stringify(codes);
-            res.writeHead(200, {'Content-Type': 'application/json'});
-        }
-        res.write(response);
-        res.end();
+    return sql;
+}
+
+function getCodesObjectFromRows(rows){
+    let code, incidentType;
+    let codes = {};
+    // Maps code to incident type in an object
+    rows.forEach(row => {
+        code = row['code'];
+        incidentType = row['incident_type'];
+        codes[code] = incidentType;
     });
-});
+    return codes;
+}
+
+
 
 // GET /neighborhoods
 // Return JSON object with list of neighborhood ids and their corresponding neighborhood name (ordered by neighborhood number)
 app.get('/neighborhoods', (req, res) => {
-    // default limit 10,000
-    db.all("SELECT * FROM Neighborhoods ORDER BY neighborhood_number ASC", (err, rows) => {
-        let neighborhoodNumber, neighborhoodName, json;
-        let neighborhoods = {};
-        rows.forEach(row => {
-            neighborhoodNumber = row['neighborhood_number'];
-            neighborhoodName = row['neighborhood_name'];
-            neighborhoods[neighborhoodNumber] = neighborhoodName;
-        });
-        json = JSON.stringify(neighborhoods);
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.write(json);
-        res.end();
-    });
+    let formatParam = req.query.format;
+    let idParam = req.query.id;
+
+    let sqlQuery = buildSqlQueryForNeighborhoods(idParam);
+    writeResponse(res, sqlQuery, getNeighborhoodsObjectFromRows, formatParam);
 });
+
+function buildSqlQueryForNeighborhoods(idParam){
+    let sql, ids;
+    // Build SQL query using optional 'id' URL param
+    sql = 'SELECT * FROM Neighborhoods';
+    if(idParam){ // if 'id' URL param was supplied
+        ids = idParam.split(',');
+        sql += ' WHERE neighborhood_number = ' + ids.join(' OR neighborhood_number = ');
+    }
+    sql += ' ORDER BY neighborhood_number ASC';
+    return sql;
+}
+
+function getNeighborhoodsObjectFromRows(rows){
+    let neighborhoodNumber, neighborhoodName;
+    let neighborhoods = {};
+    rows.forEach(row => {
+        neighborhoodNumber = row['neighborhood_number'];
+        neighborhoodName = row['neighborhood_name'];
+        neighborhoods[neighborhoodNumber] = neighborhoodName;
+    });
+    return neighborhoods;
+}
 
 // GET /incidents
 // Return JSON object with list of crime incidents (most recent first). Make date and time separate fields.
 app.get('/incidents', (req, res) => {
-    db.all("SELECT * FROM Incidents ORDER BY date_time DESC", (err, rows) => {
-        let caseNumber, dateTime, date, time, json;
-        let incidents = {};
-        // The rows are ordered correctly by time but when putting them into object it won't order them correctly even after using rows.reverse()
-        rows.forEach(row => {
-            caseNumber = row['case_number'];
-            dateTime = row['date_time'];
-            [date, time] = dateTime.split('T');
-            incidents[caseNumber] = {
-                'date': date,
-                'time': time,
-                'code': row['code'],
-                'incident': row['incident'],
-                'police_grid': row['police_grid'],
-                'neighborhood_number': row['neighborhood_number'],
-                'block': row['block'],
-            };
+    let formatParam = req.query.format;
+    let idParam = req.query.id;
+
+    let sqlQuery = buildSqlQueryForIncidents(idParam);
+    writeResponse(res, sqlQuery, getIncidentsObjectFromRows, formatParam);
+});
+
+function buildSqlQueryForIncidents(idParam){
+    let sql, ids;
+    // Build SQL query using optional 'id' URL param
+    sql = 'SELECT * FROM Incidents';
+    // if(idParam){ // if 'id' URL param was supplied
+    //     ids = idParam.split(',');
+    //     sql += ' WHERE neighborhood_number = ' + ids.join(' OR neighborhood_number = ');
+    // }
+    sql += ' ORDER BY date_time DESC LIMIT 10'; // default 10,000
+    return sql;
+}
+/*
+start_date - first date to include in results (e.g. ?start_date=09-01-2019)
+end_date - last date to include in results (e.g. ?end_date=10-31-2019)
+code - comma separated list of codes to include in result (e.g. ?code=110,700). By default all codes
+should be included.
+grid - comma separated list of police grid numbers to include in result (e.g. ?grid=38,65). By default all
+police grids should be included.
+neighborhood - comma separated list of neighborhood numbers to include in result (e.g. ?id=11,14). By
+default all neighborhoods should be included.
+limit - maximum number of incidents to include in result (e.g. ?limit=50). By default the limit should be
+10,000.
+*/
+
+function getIncidentsObjectFromRows(rows){
+    let incidents = {};
+    rows.forEach(row => {
+        let caseNumber = row['case_number'];
+        let dateTime = row['date_time'];
+        let date, time;
+        [date, time] = dateTime.split('T');
+        incidents[caseNumber] = {
+            'date': date,
+            'time': time,
+            'code': row['code'],
+            'incident': row['incident'],
+            'police_grid': row['police_grid'],
+            'neighborhood_number': row['neighborhood_number'],
+            'block': row['block'],
+        };
+    });
+    return incidents;
+}
+
+
+// General function use in all routing
+function queryDatabase(sqlQuery){
+    // Create promise that will query db for codes
+    return new Promise( (resolve, reject) => {
+        db.all(sqlQuery, (err, rows) => {
+            if (err) {
+                reject();
+            } else {
+                resolve(rows);
+            }
         });
-        json = JSON.stringify(incidents);
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.write(json);
+    });
+}
+// General function use in all routing
+function formatResponse(responseObject, formatParam){
+    let response, contentType;
+    // Default format is JSON, if XML in 'format' URL param then use XML
+    if(formatParam === 'XML'){
+        response = xmlConverter.js2xml(responseObject, {compact: false, spaces: 4});
+        contentType = 'application/xml';
+    } else {
+        response = JSON.stringify(responseObject);
+        contentType = 'application/json';
+    }
+    return {response: response, contentType: contentType};
+}
+// General function use in all routing
+function writeResponse(res, sqlQuery, buildObjectFunction, formatParam){
+    queryDatabase(sqlQuery)
+        .then(rows => {
+            let object = buildObjectFunction(rows);
+            let r = formatResponse(object, formatParam);
+            res.writeHead(200, {'Content-Type': r.contentType});
+            res.write(r.response); // JSON or XML representation of codes object
+            res.end();
+        }).catch(err => {
+        res.writeHead(500, {'Content-Type': 'text/plain'});
+        res.write('Error while querying database');
         res.end();
     });
-});
+}
+
+
+
+
 
 // PUT /new-incident
 // Upload incident data to be inserted into the SQLite3 database
 app.put('/new-incident', (req, res) => {
-
-    let caseNumber = '11'; // real one: 12234314
-    db.get("SELECT case_number FROM Incidents WHERE case_number = ?", caseNumber, (err, row) => {
-        // if row is undefined then case number does not exist
-        if(row){
-
-        }
-    });
-    // let values = ['0000', '2015-10-29T07:46:00', 2, '1', 2, 3, '1'];
     // console.log(req.body);
-    // // check if in db first using a SELECT then send 500 error if exists else continue
-    // // Getting error saying database is readonly
-    // db.run("INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)", values, (err, rows) => {
-    //     console.log(err);
-    //     console.log(rows);
-    // });
-    // // json = JSON.stringify(incidents);
-    // // res.writeHead(200, {'Content-Type': 'application/json'});
-    // // res.write(json);
-    // // res.end();
+    let caseNumber = '12234314'; // real one: 12234314, req.body.case_number
+    let promise = new Promise( (resolve, reject) => {
+        db.get("SELECT case_number FROM Incidents WHERE case_number = ?", caseNumber, (err, row) => {
+            // if row is undefined then case number does not exist
+            if(err){
+                reject();
+            }else {
+                if (row) {
+                    reject('exists');
+                } else {
+                    resolve();
+                }
+            }
+        });
+    });
+    promise.then(a => {
+        console.log('insert');
+        // let values = ['0000', '2015-10-29T07:46:00', 2, '1', 2, 3, '1'];
+        // console.log(req.body);
+        // // Getting error saying database is readonly
+        // db.run("INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)", values, (err, rows) => {
+        //     console.log(err);
+        //     console.log(rows);
+        // });
+    });
+    promise.catch( (err) => {
+        res.writeHead(500, {'Content-Type': 'text/plain'});
+        if(err === 'exists') {
+            res.write('Case number already exists in the database');
+        } else {
+            res.write('Error while querying database');
+        }
+        res.end();
+    })
 
 });
 
