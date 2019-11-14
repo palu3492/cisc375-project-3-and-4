@@ -138,12 +138,14 @@ function buildSqlQueryForIncidents(params){
     sql = 'SELECT * FROM Incidents';
 	// loop through params and use them in where if they're in this array
 	let possibleParams = ['start_date', 'end_date', 'code', 'grid', 'neighborhood', 'limit'];
-	// this is an object! can't loop like array
-	params.forEach(param => {
+	for(let param in params) {
 		if(param in possibleParams){
-			sql += ' WHERE ' + param + ' = ' + ids.join(' OR neighborhood_number = '); // not done
+			let paramValue = params[param];
+			//sql += ' WHERE ' + param + ' = ' + ids.join(' OR neighborhood_number = '); // not done
+			sql += ' WHERE ' + param + ' = ' + paramValue; // not done
 		}
-	});
+	}
+	// start_date, end_date, etc will need to be dealt with seperatly
     // if(idParam){ // if 'id' URL param was supplied
     //     ids = idParam.split(',');
     //     sql += ' WHERE neighborhood_number = ' + ids.join(' OR neighborhood_number = ');
@@ -235,7 +237,8 @@ function writeResponse(res, sqlQuery, buildObjectFunction, formatParam){
 // Upload incident data to be inserted into the SQLite3 database
 app.put('/new-incident', (req, res) => {
     // console.log(req.body);
-    let caseNumber = '12234314'; // real one: 12234314, req.body.case_number
+	let body = req.body;
+    let caseNumber = '12234314'; //body.case_number // real one: 12234314, req.body.case_number
     let promise = new Promise( (resolve, reject) => {
         db.get("SELECT case_number FROM Incidents WHERE case_number = ?", caseNumber, (err, row) => {
             // if row is undefined then case number does not exist
@@ -252,7 +255,9 @@ app.put('/new-incident', (req, res) => {
     });
     promise.then(a => {
         console.log('insert');
-        // let values = ['0000', '2015-10-29T07:46:00', 2, '1', 2, 3, '1'];
+        let values = ['0000', '2015-10-29T07:46:00', 2, '1', 2, 3, '1'];
+		// this isn't accurate
+		value = [body.case_number, body.date, body.date, body.time, body.code, body.incident, body.police_grid, body.block];
         // console.log(req.body);
         // // Getting error saying database is readonly
         // db.run("INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)", values, (err, rows) => {
