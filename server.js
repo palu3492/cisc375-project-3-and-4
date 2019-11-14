@@ -82,7 +82,7 @@ function getCodesObjectFromRows(rows){
     rows.forEach(row => {
         code = row['code'];
         incidentType = row['incident_type'];
-        codes[code] = incidentType;
+        codes['C'+code] = incidentType;
     });
     return codes;
 }
@@ -117,7 +117,7 @@ function getNeighborhoodsObjectFromRows(rows){
     rows.forEach(row => {
         neighborhoodNumber = row['neighborhood_number'];
         neighborhoodName = row['neighborhood_name'];
-        neighborhoods[neighborhoodNumber] = neighborhoodName;
+        neighborhoods['N'+neighborhoodNumber] = neighborhoodName;
     });
     return neighborhoods;
 }
@@ -126,16 +126,24 @@ function getNeighborhoodsObjectFromRows(rows){
 // Return JSON object with list of crime incidents (most recent first). Make date and time separate fields.
 app.get('/incidents', (req, res) => {
     let formatParam = req.query.format;
-    let idParam = req.query.id;
+    let params = req.query;
 
-    let sqlQuery = buildSqlQueryForIncidents(idParam);
+    let sqlQuery = buildSqlQueryForIncidents(params);
     writeResponse(res, sqlQuery, getIncidentsObjectFromRows, formatParam);
 });
 
-function buildSqlQueryForIncidents(idParam){
+function buildSqlQueryForIncidents(params){
     let sql, ids;
-    // Build SQL query using optional 'id' URL param
+    // Build SQL query using all optional URL params
     sql = 'SELECT * FROM Incidents';
+	// loop through params and use them in where if they're in this array
+	let possibleParams = ['start_date', 'end_date', 'code', 'grid', 'neighborhood', 'limit'];
+	// this is an object! can't loop like array
+	params.forEach(param => {
+		if(param in possibleParams){
+			sql += ' WHERE ' + param + ' = ' + ids.join(' OR neighborhood_number = '); // not done
+		}
+	});
     // if(idParam){ // if 'id' URL param was supplied
     //     ids = idParam.split(',');
     //     sql += ' WHERE neighborhood_number = ' + ids.join(' OR neighborhood_number = ');
@@ -163,7 +171,7 @@ function getIncidentsObjectFromRows(rows){
         let dateTime = row['date_time'];
         let date, time;
         [date, time] = dateTime.split('T');
-        incidents[caseNumber] = {
+        incidents['I'+caseNumber] = {
             'date': date,
             'time': time,
             'code': row['code'],
