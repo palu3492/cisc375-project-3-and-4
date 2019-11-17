@@ -17,7 +17,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 let port = 8000;
 
 // open usenergy.sqlite3 database
-let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READONLY, err => {
+let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, err => {
   if (err) {
     console.log("Error opening " + db_filename);
   } else {
@@ -187,7 +187,7 @@ function getIncidentsObjectFromRows(rows) {
       incident: row["incident"],
       police_grid: row["police_grid"],
       neighborhood_number: row["neighborhood_number"],
-      block: row["block"] + "\n"
+      block: row["block"]
     };
   });
   return incidents;
@@ -244,55 +244,117 @@ function writeResponse(res, sqlQuery, buildObjectFunction, formatParam) {
 app.put("/new-incident", (req, res) => {
   // console.log(req.body);
   let body = req.body;
-  let caseNumber = "12234314"; //body.case_number // real one: 12234314, req.body.case_number
-  let promise = new Promise((resolve, reject) => {
-    db.get(
-      "SELECT case_number FROM Incidents WHERE case_number = ?",
-      caseNumber,
-      (err, row) => {
-        // if row is undefined then case number does not exist
-        if (err) {
-          reject();
+  //let caseNumber = "12234314"; //body.case_number // real one: 12234314, req.body.case_number
+  let caseNumber = parseInt(req.body.case_number, 10);
+
+  db.get(
+    "SELECT case_number FROM Incidents WHERE case_number = ?",
+    caseNumber,
+    (err, row) => {
+      if (err) {
+        reject();
+      } else {
+        if (row) {
+          reject("exists");
         } else {
-          if (row) {
-            reject("exists");
-          } else {
-            resolve();
-          }
+          console.log("info " + req.body.date_time);
+
+          let newIncident = {};
+          let incidentInfo = {
+            date_time: req.body.date_time,
+            code: req.body.code,
+            incident: req.body.incident,
+            police_grid: req.body.police_grid,
+            neighborhood_number: req.body.neighborhood_number,
+            block: req.body.block
+          };
+          let case_number = req.body.case_number;
+          newIncident[case_number] = incidentInfo;
+          console.log(newIncident[case_number].date_time);
+          console.log(newIncident[case_number].block);
+
+          db.run(
+            "INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)",
+            newIncident,
+            (err, rows) => {
+              (rows["case_number"] = newIncident[case_number].date_time),
+                (rows["date_time"] = newIncident[case_number].code),
+                (rows["code"] = newIncident[case_number].incident),
+                (rows["police_grid"] = incident[case_number].police_grid),
+                (rows["neighborhood_number"] = incident[case_number].block),
+                (rows["block"] = incident["block"]);
+            }
+          );
         }
       }
-    );
-  });
-  promise.then(a => {
-    console.log("insert");
-    let values = ["0000", "2015-10-29T07:46:00", 2, "1", 2, 3, "1"];
-    // this isn't accurate
-    value = [
-      body.case_number,
-      body.date,
-      body.date,
-      body.time,
-      body.code,
-      body.incident,
-      body.police_grid,
-      body.block
-    ];
-    // console.log(req.body);
-    // // Getting error saying database is readonly
-    // db.run("INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)", values, (err, rows) => {
-    //     console.log(err);
-    //     console.log(rows);
-    // });
-  });
-  promise.catch(err => {
-    res.writeHead(500, { "Content-Type": "text/plain" });
-    if (err === "exists") {
-      res.write("Case number already exists in the database");
-    } else {
-      res.write("Error while querying database");
     }
-    res.end();
-  });
+  );
+
+  // let promise = new Promise((resolve, reject) => {
+  //   db.get(
+  //     "SELECT case_number FROM Incidents WHERE case_number = ?",
+  //     caseNumber,
+  //     (err, row) => {
+  //       // if row is undefined then case number does not exist
+  //       if (err) {
+  //         reject();
+  //       } else {
+  //         if (row) {
+  //           reject("exists");
+  //         } else {
+  //           resolve();
+  //         }
+  //       }
+  //     }
+  //   );
+  // });
+  // promise.then(a => {
+  //   console.log("insert");
+  //   //let values = ["0000", "2015-10-29T07:46:00", 2, "1", 2, 3, "1"];
+  //   console.log(body.code); // UNDEFINED
+  //   let newIncident = {
+  //     date: a.date,
+  //     time: a.time,
+  //     code: a.code,
+  //     incident: a.incident,
+  //     police_grid: a.police_grid,
+  //     block: a.block
+  //   };
+  //   let case_number = parseInt(a.body.case_number, 10);
+  //   newIncident[case_number] = newIncident;
+
+  //   //writeResponse(a, newIncident);
+  //   // this isn't accurate
+  //   value = [
+  //     body.case_number,
+  //     body.date,
+  //     body.date,
+  //     body.time,
+  //     body.code,
+  //     body.incident,
+  //     body.police_grid,
+  //     body.block
+  //   ];
+  //   console.log(req.body);
+  //   // Getting error saying database is readonly
+  //   db.run(
+  //     "INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)",
+  //     newIncident,
+  //     (err, rows) => {
+  //       console.log(err);
+  //       console.log(rows);
+  //     }
+  //   );
+  // });
+  // promise.catch(err => {
+  //   res.writeHead(500, { "Content-Type": "text/plain" });
+  //   if (err === "exists") {
+  //     res.write("Case number already exists in the database");
+  //   } else {
+  //     res.write("Error while querying database");
+  //   }
+  //   res.end();
+  // });
 });
 
 /*
