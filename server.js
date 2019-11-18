@@ -20,9 +20,9 @@ let port = 8000;
 // open stpaul_crime.sqlite3 database for reading and writing
 let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, err => {
     if (err) {
-        console.log("Error opening " + db_filename);
+        console.log("Error opening stpaul_crime.sqlite3");
     } else {
-        console.log("Now connected to " + db_filename);
+        console.log("Now connected to stpaul_crime.sqlite3");
     }
 });
 
@@ -35,7 +35,17 @@ app.get('/codes', (req, res) => {
     let codeParam = req.query.code; // ?code=110,700
     // use provided codes to make a SQL query
     let sqlQuery = buildSqlQueryForCodes(codeParam);
-    writeResponse(res, sqlQuery, getCodesObjectFromRows, formatParam);
+    queryDatabase(sqlQuery)
+    .then(rows => {
+        // Make db rows into an object
+        let object = getCodesObjectFromRows(rows);
+        // Turn object holding response into JSON or XML and get correct return type
+        let responseData = formatResponse(object, formatParam);
+        // Response with XML or JSON
+        respondWithData(res, responseData.contentType, responseData.response)
+    }).catch(err => {
+    respondWithError(res)
+    });
 });
 
 // Build the SQL query for getting all codes and associated incident type
@@ -80,7 +90,17 @@ app.get('/neighborhoods', (req, res) => {
     let idParam = req.query.id; // ?id=1,2
     // Use provided ids (neighborhood numbers) to make a SQL query
     let sqlQuery = buildSqlQueryForNeighborhoods(idParam);
-    writeResponse(res, sqlQuery, getNeighborhoodsObjectFromRows, formatParam);
+    queryDatabase(sqlQuery)
+    .then(rows => {
+        // Make db rows into an object
+        let object = getNeighborhoodsObjectFromRows(rows);
+        // Turn object holding response into JSON or XML and get correct return type
+        let responseData = formatResponse(object, formatParam);
+        // Response with XML or JSON
+        respondWithData(res, responseData.contentType, responseData.response)
+    }).catch(err => {
+        respondWithError(res)
+    });
 });
 
 // Build the SQL query for getting all neighborhood numbers and corresponding neighborhood name
@@ -125,7 +145,17 @@ app.get('/incidents', (req, res) => {
     // use any of the provided params to make a SQL query
     // possible params 'start_date', 'end_date', 'code', 'grid', 'neighborhood', 'limit'
     let sqlQuery = buildSqlQueryForIncidents(params);
-    writeResponse(res, sqlQuery, getIncidentsObjectFromRows, formatParam);
+    queryDatabase(sqlQuery)
+    .then(rows => {
+        // Make db rows into an object
+        let object = getIncidentsObjectFromRows(rows);
+        // Turn object holding response into JSON or XML and get correct return type
+        let responseData = formatResponse(object, formatParam);
+        // Response with XML or JSON
+        respondWithData(res, responseData.contentType, responseData.response)
+    }).catch(err => {
+        respondWithError(res)
+    });
 });
 
 // Work-in-progress <==============
@@ -135,16 +165,19 @@ function buildSqlQueryForIncidents(params){
     let sql, ids;
     // Build SQL query using all optional URL params
     sql = 'SELECT * FROM Incidents';
+    if(params.case_number){
+        sql += ' WHERE ' + 'case_number' + ' = ' + params.case_number;
+    }
     // loop through params and use them in where if they're in this array
     // ==> This actually won't work correctly, needs to be changed
-    let possibleParams = ['start_date', 'end_date', 'code', 'grid', 'neighborhood', 'limit'];
-    for(let param in params) {
-        if(param in possibleParams){
-            let paramValue = params[param];
-            //sql += ' WHERE ' + param + ' = ' + ids.join(' OR neighborhood_number = '); // not done
-            sql += ' WHERE ' + param + ' = ' + paramValue; // not done
-        }
-    }
+    // let possibleParams = ['start_date', 'end_date', 'code', 'grid', 'neighborhood', 'limit'];
+    // for(let param in params) {
+    //     if(param in possibleParams){
+    //         let paramValue = params[param];
+    //         //sql += ' WHERE ' + param + ' = ' + ids.join(' OR neighborhood_number = '); // not done
+    //         sql += ' WHERE ' + param + ' = ' + paramValue; // not done
+    //     }
+    // }
     // start_date, end_date, etc will need to be dealt with seperatly
     // if(idParam){ // if 'id' URL param was supplied
     //     ids = idParam.split(',');
@@ -208,24 +241,7 @@ function queryDatabase(sqlQuery){
         });
     });
 }
-// Helper function for formatting rows received from db into JSON or XML
-// Loops through rows and puts them in object according to param 'buildObjectFunction' which is a callback to
-// a route specific function for formatting rows correctly then using 'formatParam' it will format that
-// object into either JSON or XML
-function writeResponse(res, sqlQuery, buildObjectFunction, formatParam){
-    queryDatabase(sqlQuery)
-        .then(rows => {
-            let object = buildObjectFunction(rows);
-            let r = formatResponse(object, formatParam);
-            res.writeHead(200, {'Content-Type': r.contentType});
-            res.write(r.response); // JSON or XML representation of codes object
-            res.end();
-        }).catch(err => {
-        res.writeHead(500, {'Content-Type': 'text/plain'});
-        res.write('Error while querying database');
-        res.end();
-    });
-}
+
 // Helper function for converting object into XML or JSON
 // if 'formatParam' == 'XML' then XML otherwise JSON
 function formatResponse(responseObject, formatParam){
@@ -241,95 +257,54 @@ function formatResponse(responseObject, formatParam){
     return {response: response, contentType: contentType};
 }
 
-
-
-
-
-// Work-in-progress <==============
-// PUT /new-incident
-// Upload incident data to be inserted into the SQLite3 database
-app.put("/new-incident", (req, res) => {
-    // console.log(req.body);
-    let body = req.body;
-    //let caseNumber = "12234314"; //body.case_number // real one: 12234314, req.body.case_number
-    let caseNumber = parseInt(req.body.case_number, 10);
-
-    db.get(
-        "SELECT case_number FROM Incidents WHERE case_number = ?",
-        caseNumber,
-        (err, row) => {
-            if (err) {
-                reject();
-            } else {
-                if (row) {
-                    reject("exists");
-                } else {
-                    console.log("info " + req.body.date_time);
-
-                    let newIncident = {};
-                    let incidentInfo = {
-                        date_time: req.body.date_time,
-                        code: req.body.code,
-                        incident: req.body.incident,
-                        police_grid: req.body.police_grid,
-                        neighborhood_number: req.body.neighborhood_number,
-                        block: req.body.block
-                    };
-                    let case_number = req.body.case_number;
-                    newIncident[case_number] = incidentInfo;
-                    console.log(newIncident[case_number].date_time);
-                    console.log(newIncident[case_number].block);
-
-                    db.run(
-                        "INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        newIncident,
-                        (err, rows) => {
-                            (rows["case_number"] = newIncident[case_number].date_time),
-                                (rows["date_time"] = newIncident[case_number].code),
-                                (rows["code"] = newIncident[case_number].incident),
-                                (rows["police_grid"] = incident[case_number].police_grid),
-                                (rows["neighborhood_number"] = incident[case_number].block),
-                                (rows["block"] = incident["block"]);
-                        }
-                    );
-                }
-            }
-        }
-    );
-});
-
 /*
-app.put('/new-incident', (req, res) => {
-    // console.log(req.body);
-	let body = req.body;
-    let caseNumber = '12234314'; //body.case_number // real one: 12234314, req.body.case_number
-    let promise = new Promise( (resolve, reject) => {
-        db.get("SELECT case_number FROM Incidents WHERE case_number = ?", caseNumber, (err, row) => {
-            // if row is undefined then case number does not exist
-            if(err){
-                reject();
-            }else {
-                if (row) {
-                    reject('exists');
-                } else {
-                    resolve();
-                }
-            }
-        });
+Unused
+
+Helper function for formatting rows received from db into JSON or XML
+Loops through rows and puts them in object according to param 'buildObjectFunction' which is a callback to
+a route specific function for formatting rows correctly then using 'formatParam' it will format that
+object into either JSON or XML
+function writeResponse(res, sqlQuery, buildObjectFunction, formatParam){
+    queryDatabase(sqlQuery)
+    .then(rows => {
+        let object = buildObjectFunction(rows);
+        let r = formatResponse(object, formatParam);
+        res.writeHead(200, {'Content-Type': r.contentType});
+        res.write(r.response); // JSON or XML representation of codes object
+        res.end();
+    }).catch(err => {
+        res.writeHead(500, {'Content-Type': 'text/plain'});
+        res.write('Error while querying database');
+        res.end();
     });
-    promise.then(a => {
-        console.log('insert');
-        let values = ['0000', '2015-10-29T07:46:00', 2, '1', 2, 3, '1'];
-		// this isn't accurate
-		value = [body.case_number, body.date, body.date, body.time, body.code, body.incident, body.police_grid, body.block];
-        // console.log(req.body);
-        // // Getting error saying database is readonly
-        // db.run("INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)", values, (err, rows) => {
-        //     console.log(err);
-        //     console.log(rows);
-        // });
-    });
-    promise.catch( (err) => {
+}
+*/
+
+function respondWithData(res, contentType, response){
+    res.writeHead(200, {'Content-Type': contentType});
+    res.write(response); // JSON or XML representation of response object
+    res.end();
+}
+
+function respondWithError(res){
+    res.writeHead(500, {'Content-Type': 'text/plain'});
+    res.write('Error while querying database');
+    res.end();
+}
+
+// PUT /new-incident
+// Upload incident data to be inserted into db
+app.put("/new-incident", (req, res) => {
+    let body = req.body;
+    // let caseNumber = "12234314";
+    let caseNumber = body.case_number; // Doesn't need to be an int
+    doesCaseNumberExist(caseNumber)
+    .then(() => {
+        insertNewIncident(body);
+        res.writeHead(200); // Response with 200 'request has succeeded'
+        res.end();
+    })
+    .catch((err) => {
         res.writeHead(500, {'Content-Type': 'text/plain'});
         if(err === 'exists') {
             res.write('Case number already exists in the database');
@@ -337,35 +312,51 @@ app.put('/new-incident', (req, res) => {
             res.write('Error while querying database');
         }
         res.end();
-    })
-
+    });
 });
-*/
 
-/*
-PUT /new-incident
-Upload incident data to be inserted into the SQLite3 database
-Data fields:
-case_number
-date
-time
-code
-incident
-police_grid
-neighborhood_number
-block
-Note: response should reject (status 500) if the case number already exists in the database
+// Checks if case number to be put into database already exists
+// Returns a promise which will resolve if case number doesn't exist and reject if it does exist
+function doesCaseNumberExist(caseNumber){
+  return new Promise( (resolve, reject) => {
+      db.get("SELECT case_number FROM Incidents WHERE case_number = ?", caseNumber, (err, row) => {
+          if(err){
+              reject();
+          }else {
+              // if row is undefined then case number does not exist
+              if(row){
+                  reject('exists');
+              }else{
+                  resolve();
+              }
+          }
+      });
+  });
+}
 
+// Inserts new incident into database using the values in the body of PUT request
+function insertNewIncident(body){
+    // 'body' data fields:
+    // case_number, date, time, code, incident, police_grid, neighborhood_number, block
 
-Incidents:
-case_number (TEXT): unique id from crime case
-date_time (DATETIME): date and time when incident took place
-code (INTEGER): crime incident type numeric code
-incident (TEXT): crime incident description (more specific than incident_type)
-police_grid (INTEGER): police grid number where incident occurred
-neighborhood_number (INTEGER): neighborhood id where incident occurred
-block (TEXT): approximate address where incident occurred
-*/
+    // date and time need to be joined together and go into column date_time
+    let dateTime = body.date+'T'+body.time;
+
+    // Order of columns in db. Values need to be inserted in this order.
+    // case_number (TEXT), date_time (DATETIME), code (INTEGER), incident (TEXT),
+    // police_grid (INTEGER), neighborhood_number (INTEGER), block (TEXT)
+    //
+    //let values = ['0000', '2015-10-29T07:46:00', 2, '1', 2, 3, '1']; // For testing empty body PUT requests
+    // These values can all be strings, they will be converted to correct type in db
+    // example: [ '1231', '2019-10-30T23:57:08.000', '23423', 'Proactive Police Visit', '87', '7', 'THOMAS AV  & VICTORIA' ]
+    let values = [
+        body.case_number, dateTime, body.code, body.incident, body.police_grid, body.neighborhood_number, body.block
+    ];
+
+    // Insert a new incident into Incidents table
+    // Each question mark is replaced with corresponding value in 'values' array at that index
+    db.run("INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)", values);
+}
 
 console.log('Listening on port ' + port);
 let server = app.listen(port);
