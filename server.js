@@ -157,14 +157,13 @@ app.get('/incidents', (req, res) => {
     });
 });
 
-// Work-in-progress <==============
 // Build the SQL query for getting all crime incidents and when and where they happened
 // the params can filter by any database column
 function buildSqlQueryForIncidents(params){
     let sql;
     // Build SQL query using all optional URL params
     sql = 'SELECT * FROM Incidents';
-
+    // map params to database column
     let possibleParams = {code: 'code', grid: 'police_grid', id: 'neighborhood_number'}; // id is neighborhood which is neighborhood_number in db
     let first = true;
     for(let param in params){
@@ -172,23 +171,27 @@ function buildSqlQueryForIncidents(params){
             let paramTrim = param.trim();
             if (Object.keys(possibleParams).includes(paramTrim)) {
                 let paramSplit = params[param].split(',');
-                first ? (sql += ' WHERE ') : (sql += ' AND ');
+                // whether to use WHERE or OR, WHERE is used first but all subsequent filters use OR
+                first ? (sql += ' WHERE ') : (sql += ' OR ');
                 first = false;
-                sql += possibleParams[paramTrim] + ' = ' + paramSplit.join(' AND '+possibleParams[paramTrim] + ' = '); // not done
+                // example: OR code = 117 OR code = 112
+                sql += possibleParams[paramTrim] + ' = ' + paramSplit.join(' OR '+possibleParams[paramTrim] + ' = ');
             }
         }
     }
     // start_date, end_date, limit filtering
-    if(Object.keys(params).includes('start_date')){ // if 'id' URL param was supplied
-        first ? (sql += ' WHERE ') : (sql += ' AND ');
+    if(Object.keys(params).includes('start_date')){  // if 'start_date' URL param was supplied
+        first ? (sql += ' WHERE ') : (sql += ' OR ');
+        first = false;
         sql += 'date_time > '+ params['start_date'];
     }
-    if(Object.keys(params).includes('end_date')){ // if 'id' URL param was supplied
-        first ? (sql += ' WHERE ') : (sql += ' AND ');
-        sql += 'date_time > '+ params['end_date'];
+    if(Object.keys(params).includes('end_date')){  // if 'end_date' URL param was supplied
+        first ? (sql += ' WHERE ') : (sql += ' OR ');
+        first = false;
+        sql += 'date_time < '+ params['end_date'];
     }
     let limit = 10; // default 10,000, limiting to 10 currently
-    if(Object.keys(params).includes('limit')){ // if 'id' URL param was supplied
+    if(Object.keys(params).includes('limit')){ // if 'limit' URL param was supplied
         limit = params['limit'];
     }
 
