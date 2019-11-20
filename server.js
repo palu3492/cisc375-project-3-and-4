@@ -44,7 +44,7 @@ app.get('/codes', (req, res) => {
         // Response with XML or JSON
         respondWithData(res, responseData.contentType, responseData.response)
     }).catch(err => {
-    respondWithError(res)
+        respondWithError(res)
     });
 });
 
@@ -68,7 +68,6 @@ function buildSqlQueryForCodes(codeParam){
 // Creates object to map code to incident type
 // rows are the rows returned from database, an array of { code: 652, incident_type: '...' }
 function getCodesObjectFromRows(rows){
-    console.log(rows);
     let code, incidentType;
     let codes = {};
     // Loop through codes and put them in object
@@ -162,28 +161,40 @@ app.get('/incidents', (req, res) => {
 // Build the SQL query for getting all crime incidents and when and where they happened
 // the params can filter by any database column
 function buildSqlQueryForIncidents(params){
-    let sql, ids;
+    let sql;
     // Build SQL query using all optional URL params
     sql = 'SELECT * FROM Incidents';
-    if(params.case_number){
-        sql += ' WHERE ' + 'case_number' + ' = ' + params.case_number;
+
+    let possibleParams = {code: 'code', grid: 'police_grid', id: 'neighborhood_number'}; // id is neighborhood which is neighborhood_number in db
+    let first = true;
+    for(let param in params){
+        if(params.hasOwnProperty(param)) {
+            let paramTrim = param.trim();
+            if (Object.keys(possibleParams).includes(paramTrim)) {
+                let paramSplit = params[param].split(',');
+                first ? (sql += ' WHERE ') : (sql += ' AND ');
+                first = false;
+                sql += possibleParams[paramTrim] + ' = ' + paramSplit.join(' AND '+possibleParams[paramTrim] + ' = '); // not done
+            }
+        }
     }
-    // loop through params and use them in where if they're in this array
-    // ==> This actually won't work correctly, needs to be changed
-    // let possibleParams = ['start_date', 'end_date', 'code', 'grid', 'neighborhood', 'limit'];
-    // for(let param in params) {
-    //     if(param in possibleParams){
-    //         let paramValue = params[param];
-    //         //sql += ' WHERE ' + param + ' = ' + ids.join(' OR neighborhood_number = '); // not done
-    //         sql += ' WHERE ' + param + ' = ' + paramValue; // not done
-    //     }
-    // }
-    // start_date, end_date, etc will need to be dealt with seperatly
-    // if(idParam){ // if 'id' URL param was supplied
-    //     ids = idParam.split(',');
-    //     sql += ' WHERE neighborhood_number = ' + ids.join(' OR neighborhood_number = ');
-    // }
-    sql += ' ORDER BY date_time DESC LIMIT 10'; // default 10,000, limiting to 10 currently
+    // start_date, end_date, limit filtering
+    if(Object.keys(params).includes('start_date')){ // if 'id' URL param was supplied
+        first ? (sql += ' WHERE ') : (sql += ' AND ');
+        sql += 'date_time > '+ params['start_date'];
+    }
+    if(Object.keys(params).includes('end_date')){ // if 'id' URL param was supplied
+        first ? (sql += ' WHERE ') : (sql += ' AND ');
+        sql += 'date_time > '+ params['end_date'];
+    }
+    let limit = 10; // default 10,000, limiting to 10 currently
+    if(Object.keys(params).includes('limit')){ // if 'id' URL param was supplied
+        limit = params['limit'];
+    }
+
+    sql += ' ORDER BY date_time DESC LIMIT ' + limit;
+    console.log(sql);
+
     // Without params provided: SELECT * FROM Incidents ORDER BY date_time DESC LIMIT 10
     return sql;
 }
@@ -198,6 +209,9 @@ neighborhood - comma separated list of neighborhood numbers to include in result
 default all neighborhoods should be included.
 limit - maximum number of incidents to include in result (e.g. ?limit=50). By default the limit should be
 10,000.
+
+case_number (TEXT), date_time (DATETIME), code (INTEGER), incident (TEXT), police_grid (INTEGER),
+neighborhood_number (INTEGER), block (TEXT)
 */
 
 // Creates object that maps incidents to when and where they happened
@@ -234,6 +248,7 @@ function queryDatabase(sqlQuery){
     return new Promise( (resolve, reject) => {
         db.all(sqlQuery, (err, rows) => {
             if (err) {
+                console.log(err);
                 reject();
             } else {
                 resolve(rows);
@@ -256,29 +271,6 @@ function formatResponse(responseObject, formatParam){
     }
     return {response: response, contentType: contentType};
 }
-
-/*
-Unused
-
-Helper function for formatting rows received from db into JSON or XML
-Loops through rows and puts them in object according to param 'buildObjectFunction' which is a callback to
-a route specific function for formatting rows correctly then using 'formatParam' it will format that
-object into either JSON or XML
-function writeResponse(res, sqlQuery, buildObjectFunction, formatParam){
-    queryDatabase(sqlQuery)
-    .then(rows => {
-        let object = buildObjectFunction(rows);
-        let r = formatResponse(object, formatParam);
-        res.writeHead(200, {'Content-Type': r.contentType});
-        res.write(r.response); // JSON or XML representation of codes object
-        res.end();
-    }).catch(err => {
-        res.writeHead(500, {'Content-Type': 'text/plain'});
-        res.write('Error while querying database');
-        res.end();
-    });
-}
-*/
 
 function respondWithData(res, contentType, response){
     res.writeHead(200, {'Content-Type': contentType});
@@ -346,7 +338,7 @@ function insertNewIncident(body){
     // case_number (TEXT), date_time (DATETIME), code (INTEGER), incident (TEXT),
     // police_grid (INTEGER), neighborhood_number (INTEGER), block (TEXT)
     //
-    //let values = ['0000', '2015-10-29T07:46:00', 2, '1', 2, 3, '1']; // For testing empty body PUT requests
+    // let values = ['0000', '2015-10-29T07:46:00', 2, '1', 2, 3, '1']; // For testing empty body PUT requests
     // These values can all be strings, they will be converted to correct type in db
     // example: [ '1231', '2019-10-30T23:57:08.000', '23423', 'Proactive Police Visit', '87', '7', 'THOMAS AV  & VICTORIA' ]
     let values = [
