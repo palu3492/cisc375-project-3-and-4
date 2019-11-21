@@ -173,37 +173,44 @@ function buildSqlQueryForIncidents(params){
     sql = 'SELECT * FROM Incidents';
     // map params to database column
     let possibleParams = {code: 'code', grid: 'police_grid', id: 'neighborhood_number'}; // id is neighborhood which is neighborhood_number in db
-    let first = true;
+    let whereClause;
+    let whereClauses  = []; // array of WHERE clauses of sql query
     for(let param in params){
         if(params.hasOwnProperty(param)) {
-            let paramTrim = param.trim();
+            let paramTrim = param.trim(); // not needed but came up in testing
             if (Object.keys(possibleParams).includes(paramTrim)) {
                 let paramSplit = params[param].split(',');
-                // whether to use WHERE or OR, WHERE is used first but all subsequent filters use OR
-                first ? (sql += ' WHERE ') : (sql += ' OR ');
-                first = false;
+                paramSplit = paramSplit.filter(e => { // remove any empty strings
+                    return e.trim() !== '';
+                });
                 // example: OR code = 117 OR code = 112
-                sql += possibleParams[paramTrim] + ' = ' + paramSplit.join(' OR ' + possibleParams[paramTrim] + ' = ');
+                // Only add where clause if array isn't empty
+                if(paramSplit.length) {
+                    whereClause = "(" + possibleParams[paramTrim] + ' = ' + paramSplit.join(' OR ' + possibleParams[paramTrim] + ' = ') + ")";
+                    whereClauses.push(whereClause);
+                }
             }
         }
     }
     // start_date, end_date, limit filtering
-    if(Object.keys(params).includes('start_date')){  // if 'start_date' URL param was supplied
-        first ? (sql += ' WHERE ') : (sql += ' AND '); // AND not OR, I think
-        first = false;
-        sql += 'date_time >= '+ "'" + params['start_date'] + "'";
+    if(Object.keys(params).includes('start_date') && params['start_date'].trim() !== ''){  // if 'start_date' URL param was supplied
+        whereClause = 'date_time >= '+ "'" + params['start_date'] + "'";
+        whereClauses.push(whereClause);
     }
-    if(Object.keys(params).includes('end_date')){  // if 'end_date' URL param was supplied
-        first ? (sql += ' WHERE ') : (sql += ' AND '); // AND not OR
-        first = false;
-        sql += 'date_time <= '+ "'" + params['end_date']+ "'";
+    if(Object.keys(params).includes('end_date') && params['end_date'].trim() !== ''){  // if 'end_date' URL param was supplied
+        whereClause = 'date_time <= ' + "'" + params['end_date'] + "'";
+        whereClauses.push(whereClause);
     }
     let limit = 10000; // default 10,000, limiting to 10 currently
-    if(Object.keys(params).includes('limit')){ // if 'limit' URL param was supplied
+    if(Object.keys(params).includes('limit') && params['limit'].trim() !== ''){ // if 'limit' URL param was supplied
         limit = params['limit'];
     }
+    // Join all where clauses together with AND in the middle
+    if(whereClauses.length){
+        sql += ' WHERE ' + whereClauses.join(' AND ');
+    }
     sql += ' ORDER BY date_time DESC LIMIT ' + limit;
-    //console.log(sql);
+    console.log(sql);
     // Without params provided: SELECT * FROM Incidents ORDER BY date_time DESC LIMIT 10
     return sql;
 }
