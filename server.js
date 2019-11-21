@@ -271,7 +271,6 @@ function queryDatabase(sqlQuery){
 function formatResponse(responseObject, formatParam){
     let response, contentType;
     // Default format is JSON, if XML in 'format' URL param then use XML
-    formatParam = formatParam.toLowerCase();
     if(formatParam === 'xml'){
         response = serializer.render(responseObject);
         // response = xmlConverter.js2xml(responseObject, {compact: false, spaces: 4});
