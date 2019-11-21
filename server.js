@@ -210,7 +210,6 @@ function buildSqlQueryForIncidents(params){
         sql += ' WHERE ' + whereClauses.join(' AND ');
     }
     sql += ' ORDER BY date_time DESC LIMIT ' + limit;
-    console.log(sql);
     // Without params provided: SELECT * FROM Incidents ORDER BY date_time DESC LIMIT 10
     return sql;
 }
