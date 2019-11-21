@@ -2,7 +2,8 @@
 // var fs = require('fs');
 let path = require('path');
 let bodyParser = require('body-parser'); // For parsing params in requests
-let xmlConverter = require('xml-js'); // For converting JS objects to XML
+// let xmlConverter = require('xml-js'); // For converting JS objects to XML
+let EasyXml = require('easyxml'); // For converting JS objects to XML
 
 // NPM modules
 let express = require('express');
@@ -24,6 +25,13 @@ let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, err => {
     } else {
         console.log("Now connected to stpaul_crime.sqlite3");
     }
+});
+
+let serializer = new EasyXml({
+    singularize: true,
+    rootElement: 'response',
+    dateFormat: 'ISO',
+    manifest: true
 });
 
 // GET /codes
@@ -175,29 +183,27 @@ function buildSqlQueryForIncidents(params){
                 first ? (sql += ' WHERE ') : (sql += ' OR ');
                 first = false;
                 // example: OR code = 117 OR code = 112
-                sql += possibleParams[paramTrim] + ' = ' + paramSplit.join(' OR '+possibleParams[paramTrim] + ' = ');
+                sql += possibleParams[paramTrim] + ' = ' + paramSplit.join(' OR ' + possibleParams[paramTrim] + ' = ');
             }
         }
     }
     // start_date, end_date, limit filtering
     if(Object.keys(params).includes('start_date')){  // if 'start_date' URL param was supplied
-        first ? (sql += ' WHERE ') : (sql += ' OR ');
+        first ? (sql += ' WHERE ') : (sql += ' AND '); // AND not OR, I think
         first = false;
-        sql += 'date_time > '+ params['start_date'];
+        sql += 'date_time >= '+ "'" + params['start_date'] + "'";
     }
     if(Object.keys(params).includes('end_date')){  // if 'end_date' URL param was supplied
-        first ? (sql += ' WHERE ') : (sql += ' OR ');
+        first ? (sql += ' WHERE ') : (sql += ' AND '); // AND not OR
         first = false;
-        sql += 'date_time < '+ params['end_date'];
+        sql += 'date_time <= '+ "'" + params['end_date']+ "'";
     }
-    let limit = 10; // default 10,000, limiting to 10 currently
+    let limit = 10000; // default 10,000, limiting to 10 currently
     if(Object.keys(params).includes('limit')){ // if 'limit' URL param was supplied
         limit = params['limit'];
     }
-
     sql += ' ORDER BY date_time DESC LIMIT ' + limit;
-    console.log(sql);
-
+    //console.log(sql);
     // Without params provided: SELECT * FROM Incidents ORDER BY date_time DESC LIMIT 10
     return sql;
 }
@@ -265,8 +271,10 @@ function queryDatabase(sqlQuery){
 function formatResponse(responseObject, formatParam){
     let response, contentType;
     // Default format is JSON, if XML in 'format' URL param then use XML
-    if(formatParam === 'XML'){
-        response = xmlConverter.js2xml(responseObject, {compact: false, spaces: 4});
+    formatParam = formatParam.toLowerCase();
+    if(formatParam === 'xml'){
+        response = serializer.render(responseObject);
+        // response = xmlConverter.js2xml(responseObject, {compact: false, spaces: 4});
         contentType = 'application/xml';
     } else {
         response = JSON.stringify(responseObject);
@@ -347,7 +355,6 @@ function insertNewIncident(body){
     let values = [
         body.case_number, dateTime, body.code, body.incident, body.police_grid, body.neighborhood_number, body.block
     ];
-
     // Insert a new incident into Incidents table
     // Each question mark is replaced with corresponding value in 'values' array at that index
     db.run("INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)", values);
