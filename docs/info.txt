@@ -1,0 +1,30 @@
+Dynamic Web Application (60 pts)
+
+Implement the following to earn 45/60 points (grade: C)
+
+Show a map using the Leaflet API
+    Pan and zoom available with mouse click-and-drag and scroll wheel interaction
+        Limit pan and zoom so map does not display regions outside of St. Paul <- zoom limited, not panning
+        HINT: zoom levels 11-18 are good
+    Have an input box for a user to type a location (lat/long coordinates, address, etc.)
+        Map should update when location is entered <- DONE
+        Input box text should update with new location (lat/long coordinates or address) when map is panned <- DONE
+        Clamp input values if lat/long is outside of St. Paul's bounding box
+Retrieve data from your St. Paul Crime API
+    By default, include crimes from 10/01/2019 to 10/31/2019
+    Populate a table with one row per crime (use neighborhood_name rather than neighborhood_number, and incident_type rather than code)
+        Only show crimes that occurred in locations visible on the map
+        HINT: get lat/long coordinates for the NW and SE corners of the map to use as the min/max lat/long coordinates.
+    Draw markers on the map for each neighboorhood
+        Marker should include number of crimes committed in that neighborhood
+    Use the Nominatim API (https://nominatim.org/release-docs/develop/api/Overview/ (Links to an external site.) (Links to an external site.)) to convert between address and lat/long
+    "About the Project" page
+    Short bio about each team member (including a photo)
+    Description of the tools (frameworks, APIs, etc.) you used to create the application
+    Video demo of the application (2 - 4 minutes) - include voiceover
+        Can natively embed or upload to YouTube and embed
+    Six interesting findings that you discovered using your application
+
+Implement additional features to earn a B or A (5 pts each)
+
+...
