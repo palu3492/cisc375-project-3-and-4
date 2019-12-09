@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Spotify Search</title>
+    <link rel="stylesheet" href="css/oldStyle.css"/>
+    <script type="application/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script type="application/javascript" src="scripts/vueExample.js"></script>
+</head>
+<body onload="Init()">
+    <div id="app">
+        <input id="search" type="text" v-model="spotify_search" :placeholder="input_placeholder"></input>
+        <select id="type" v-model="spotify_type">
+            <option v-for="option in spotify_type_options" :value="option.value">{{ option.text }}</option>
+        </select>
+        <button type="button" @click="SpotifySearch">Search</button>
+        <ol>
+            <li v-for="item in search_results">{{ item.name }}</li>
+        </ol>
+    </div>
+</body>
+</html>
