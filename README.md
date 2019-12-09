@@ -1,2 +1,2 @@
-# Project3-RESTful-Server
-CISC 375-01 Web Dev, Project 3 - RESTful Server
+CISC 375-01 Web Development
+Project 3 - RESTful Server / Project 4 - Dynamic Web Application
