@@ -24,10 +24,14 @@
 <body onload="init()">
     <div id="app">
         <div id="map"></div>
-        Latitude
-        <input type="text" v-model="mapLatitude"/>
-        Longitude
-        <input type="text" v-model="mapLongitude" @input="latLngChange"/>
+        <div class="options">
+            <div>
+                Latitude
+                <input type="text" v-model="mapLatitude"/>
+                Longitude
+                <input type="text" v-model="mapLongitude" @input="latLngChange"/>
+            </div>
+        </div>
     </div>
 </body>
 

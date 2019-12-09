@@ -1,4 +1,32 @@
+html, body{
+    width: 100vw;
+    height: 100vh;
+}
+
 #map{
-    height: 600px;
-    width: 800px;
+    width: 100vw;
+    height: 100vh;
+}
+
+.options{
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    /*width: 100vw;*/
+}
+
+.options > div{
+    /*width: fit-content;*/
+    background: #ffffff;
+    margin: auto;
+    padding: 5px;
+    border-radius: 10px;
+    margin-top: 5px;
+}
+
+input{
+    background: none;
+    border: 1px solid #80808082;
+    padding-left: 2px;
 }
