@@ -5,7 +5,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!--Style-->
+    <!-- Style -->
     <link rel="stylesheet" href="css/style.css"/>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
@@ -13,11 +13,13 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
           integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
           crossorigin=""/>
-    <!--Scripts-->
+    <!-- Scripts -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> <!-- jQuery -->
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
             integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
-            crossorigin=""></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+            crossorigin=""></script> <!-- Leaflet -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script> <!-- Vue -->
     <script type="application/javascript" src="scripts/index.js"></script>
 </head>
 
@@ -29,7 +31,34 @@
                 Latitude
                 <input type="text" v-model="mapLatitude"/>
                 Longitude
-                <input type="text" v-model="mapLongitude" @input="latLngChange"/>
+                <input type="text" v-model="mapLongitude"/>
+                <button type="button" @click="changeLatLng">Go</button>
+                <button type="button" @click="getCrimeData">Get</button>
+            </div>
+            <div>
+                <table v-if="showTable">
+                    <thead>
+                        <td>block</td>
+                        <td>incident_type</td>
+                        <td>date</td>
+                        <td>incident</td>
+                        <td>neighborhood_name</td>
+                        <td>police_grid</td>
+                        <td>time</td>
+                    </thead>
+                    <tbody>
+                        <tr v-for="i in incidents">
+                            <td>{{ i.block }}</td>
+                            <td>{{ i.incident_type }}</td>
+                            <td>{{ i.date }}</td>
+                            <td>{{ i.incident }}</td>
+                            <td>{{ i.neighborhood_name }}</td>
+                            <td>{{ i.police_grid }}</td>
+                            <td>{{ i.time }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" @click="showTable = !showTable">show/hide table</button>
             </div>
         </div>
     </div>

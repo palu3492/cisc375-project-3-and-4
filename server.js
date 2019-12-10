@@ -1,13 +1,12 @@
 // Built-in Node.js modules
-// var fs = require('fs');
 let path = require('path');
 let bodyParser = require('body-parser'); // For parsing params in requests
-// let xmlConverter = require('xml-js'); // For converting JS objects to XML
-let EasyXml = require('easyxml'); // For converting JS objects to XML
 
 // NPM modules
 let express = require('express');
 let sqlite3 = require('sqlite3');
+let cors = require('cors');
+let EasyXml = require('easyxml'); // For converting JS objects to XML
 
 
 //let public_dir = path.join(__dirname, 'public'); probably will need this from part 2
@@ -15,6 +14,7 @@ let db_filename = path.join(__dirname, 'database', 'stpaul_crime.sqlite3');
 
 let app = express();
 app.use(bodyParser.urlencoded({extended: true})); // allows us to get PUT request body
+app.use(cors());
 
 let port = 8000;
 

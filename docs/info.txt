@@ -2,13 +2,13 @@ Dynamic Web Application (60 pts)
 
 Implement the following to earn 45/60 points (grade: C)
 
-Show a map using the Leaflet API
+Show a map using the Leaflet API  <-- DONE
     Pan and zoom available with mouse click-and-drag and scroll wheel interaction
-        Limit pan and zoom so map does not display regions outside of St. Paul <- zoom limited, not panning
+        Limit pan and zoom so map does not display regions outside of St. Paul
         HINT: zoom levels 11-18 are good
     Have an input box for a user to type a location (lat/long coordinates, address, etc.)
-        Map should update when location is entered <- DONE
-        Input box text should update with new location (lat/long coordinates or address) when map is panned <- DONE
+        Map should update when location is entered
+        Input box text should update with new location (lat/long coordinates or address) when map is panned
         Clamp input values if lat/long is outside of St. Paul's bounding box
 Retrieve data from your St. Paul Crime API
     By default, include crimes from 10/01/2019 to 10/31/2019
