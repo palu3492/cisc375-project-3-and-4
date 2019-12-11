@@ -18,7 +18,7 @@ Retrieve data from your St. Paul Crime API
     Draw markers on the map for each neighboorhood
         Marker should include number of crimes committed in that neighborhood
     Use the Nominatim API (https://nominatim.org/release-docs/develop/api/Overview/ (Links to an external site.) (Links to an external site.)) to convert between address and lat/long
-    "About the Project" page
+"About the Project" page
     Short bio about each team member (including a photo)
     Description of the tools (frameworks, APIs, etc.) you used to create the application
     Video demo of the application (2 - 4 minutes) - include voiceover
