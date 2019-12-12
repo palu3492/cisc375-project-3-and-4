@@ -23,6 +23,7 @@ function init() {
     });
 
     createLeafletMap();
+    setupNeighborhoods();
 }
 
 let leafletMap;
@@ -58,6 +59,7 @@ function createLeafletMap(){
 
 // When map is zoomed or panned set latitude and longitude inputs to where map is
 function onMapChange(){
+    console.log('change');
     let latLng = leafletMap.getCenter();
     app.latitude = latLng.lat;
     app.longitude = latLng.lng;
@@ -109,31 +111,40 @@ function crimeData(){
 }
 
 let neighborhoods = {};
-
-function test(){
-    let apiUrl = 'http://localhost:8000/incidents';
-    $.getJSON(apiUrl)
-    .then(data => {
-        for(let incident in data){
-            let num = data[incident].neighborhood_number;
-            if(neighborhoods[num]) {
-                neighborhoods[num] += 1;
-            } else{
-                neighborhoods[num] = 1;
+function setupNeighborhoods(){
+    // Get all neighborhoods names
+    $.getJSON('http://localhost:8000/neighborhoods')
+        .then(data => {
+            // Loop through neighborhood names
+            for(let i=1; i<=17; i++){
+                neighborhoods[i] = {};
+                let name = data['N'+i];
+                neighborhoods[i].name = name; // match code to name
+                getNeighborhoodLatLng(name)
+                    .then(data => {
+                        neighborhoods[i].latitude = parseFloat(data[0].lat);
+                        neighborhoods[i].longitude = parseFloat(data[0].lon);
+                    });
             }
-        }
-        console.log(neighborhoods);
-        // data.forEach(incident => {
-        //     console.log();
-        // })
-    });
+        });
+}
+
+// Get the latitude and longitude for neighborhood using neighborhood name
+function getNeighborhoodLatLng(neighborhood){
+    // neighborhood = 'Greater East Side'
+    let country = 'United States',
+        state = 'Minnesota',
+        city = 'St. Paul';
+    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country='+country+'&state='+state+'&city='+city+'&q='+neighborhood;
+    // return promise
+    return $.getJSON(apiUrl);
 }
 
 // Get the latitude and longitude for inputted address
 function getLatLngFromAddress(){
     // 495 Sherburne Ave
-    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country=United States&state=MN&city=St. Paul&street=';
-    $.getJSON(apiUrl+app.address)
+    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country=United States&state=MN&city=St. Paul&street='+app.address;
+    $.getJSON(apiUrl)
     .then(data => {
         app.latitude = data[0].lat;
         app.longitude = data[0].lon;
@@ -141,16 +152,40 @@ function getLatLngFromAddress(){
     });
 }
 
-// Get the latitude and longitude for neighborhood that a incident happened in
-function getLatLngForNeighborhood(){
-    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country=United States&state=MN&city=St. Paul&q=';
-    $.getJSON(apiUrl+"Thomas/Dale(Frogtown)")
-    .then(data => {
-        console.log(data);
+let markers = [];
+function popupsForNeighborhoods(){
+    markers.forEach(marker => {
+        marker.remove();
     });
+    // 1 - 17
+    for(let n in neighborhoods){
+        if(neighborhoodOnMap(n)){
+
+            getIncidentsFromNeighborhood(n)
+                .then(data => {
+                    for(let i in data){
+                        app.incidents.push(data[i]);
+                    }
+                });
+
+            let latLng = [neighborhoods[n].latitude, neighborhoods[n].longitude];
+            let marker = L.marker(latLng, {title: 'test'}).addTo(leafletMap);
+            markers.push(marker);
+        }
+    }
 }
 
-function getLatLngOfMap(){
-    let bounds = leafletMap.getBounds(); // northeast and southwest corner
-    console.log(bounds);
+function neighborhoodOnMap(n){
+    let bounds = leafletMap.getBounds();
+    let lat = neighborhoods[n].latitude;
+    let lng = neighborhoods[n].longitude;
+    if(lat > bounds._southWest.lat && lat < bounds._northEast.lat && lng > bounds._southWest.lng && lng < bounds._northEast.lng) {
+        return true;
+    }
+    return false;
+}
+
+function getIncidentsFromNeighborhood(neighborhood){
+    let apiUrl = 'http://localhost:8000/incidents?start_date=2019-10-01&end_date=2019-10-31&id='+neighborhood;
+    return $.getJSON(apiUrl);
 }

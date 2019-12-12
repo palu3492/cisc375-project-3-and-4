@@ -37,34 +37,36 @@
                 Address
                 <input type="text"  v-model="address"/>
                 <button type="button" @click="getLatLngFromAddress">Search</button>
+                <br/>
+                <button type="button" @click="popupsForNeighborhoods">See neighborhoods and fill table</button>
             </div>
             <div>
-                <button type="button">Get</button>
                 <div id="table">
-                <table v-if="showTable">
-                    <thead>
-                        <tr>
-                            <th>block</th>
-                            <th>incident_type</th>
-                            <th>date</th>
-                            <th>incident</th>
-                            <th>neighborhood_name</th>
-                            <th>police_grid</th>
-                            <th>time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="i in incidents">
-                            <td>{{ i.block }}</td>
-                            <td>{{ i.incident_type }}</td>
-                            <td>{{ i.date }}</td>
-                            <td>{{ i.incident }}</td>
-                            <td>{{ i.neighborhood_name }}</td>
-                            <td>{{ i.police_grid }}</td>
-                            <td>{{ i.time }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <p v-if="!showTable">Table Hidden</p>
+                    <table v-if="showTable">
+                        <thead>
+                            <tr>
+                                <th>block</th>
+                                <th>incident_type</th>
+                                <th>date</th>
+                                <th>incident</th>
+                                <th>neighborhood_name</th>
+                                <th>police_grid</th>
+                                <th>time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="i in incidents">
+                                <td>{{ i.block }}</td>
+                                <td>{{ i.incident_type }}</td>
+                                <td>{{ i.date }}</td>
+                                <td>{{ i.incident }}</td>
+                                <td>{{ i.neighborhood_name }}</td>
+                                <td>{{ i.police_grid }}</td>
+                                <td>{{ i.time }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <button type="button" @click="showTable = !showTable">show/hide table</button>
             </div>

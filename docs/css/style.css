@@ -10,13 +10,12 @@ html, body{
 
 .options{
     position: fixed;
-    top: 0;
-    left: 50px;
+    top: 15px;
+    left: 15px;
     z-index: 1000;
     background: #ffffff;
     padding: 5px;
     border-radius: 4px;
-    margin-top: 10px;
     box-shadow: 0 1px 5px rgba(0,0,0,0.65);
 }
 
@@ -30,4 +29,9 @@ input{
 
 button{
     outline: none;
+}
+
+#table{
+    max-height: 80vh;
+    overflow: scroll;
 }
