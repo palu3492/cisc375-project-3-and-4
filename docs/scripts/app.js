@@ -9,28 +9,60 @@ function init() {
         data: {
             latitude: 44.94317442551431,
             longitude: -93.10775756835939,
-            incidents: [],
-            showTable: true,
-            address: ""
+            incidents: {},
+            showTable: false,
+            address: "",
+            visibleNeighborhoods: [],
+            neighborhoods: {},
+            neighborhoodsOnMap: [1, 2],
+            codes: {},
+            markers: []
         },
         methods: {
             // When 'Go' is pressed
             changeLatLng: function() {
                 // Move map to lat and lng with panning animation
-                leafletMap.panTo([this.mapLatitude, this.mapLongitude]);
+                map.panTo([this.latitude, this.longitude]);
+            },
+            visible: function(neighborhoodNumber) {
+                return this.neighborhoodsOnMap.includes(neighborhoodNumber);
+            },
+            neighborhoodName: function(neighborhoodNumber) {
+                return this.neighborhoods[neighborhoodNumber].name
+            },
+            incidentType: function(code) {
+                return this.codes[code]
+            },
+            filter: function(){
+                this.updateNeighborhoodsOnMap();
+                popupsForNeighborhoods();
+            },
+            updateNeighborhoodsOnMap: function(){
+                this.neighborhoodsOnMap = [];
+                for(let n in this.neighborhoods) {
+                    let bounds = map.getBounds();
+                    let lat = this.neighborhoods[n].latitude;
+                    let lng = this.neighborhoods[n].longitude;
+                    if (lat > bounds._southWest.lat && lat < bounds._northEast.lat && lng > bounds._southWest.lng && lng < bounds._northEast.lng) {
+                        this.neighborhoodsOnMap.push(parseInt(n));
+                    }
+                }
             }
         }
     });
 
     createLeafletMap();
     setupNeighborhoods();
+    getCodes();
+    getIncidents();
+    // addMarkers();
 }
 
-let leafletMap;
+let map;
 function createLeafletMap(){
     let stPaulLatLng = [app.latitude, app.longitude]; // Latitude and longitude of St. Paul
     // Create map with custom settings
-    leafletMap = L.map('map', {
+    map = L.map('map', {
         minZoom: 13,
         maxZoom: 17,
         maxBounds: [[44.875822, -92.984848],[44.99564, -93.229122]],
@@ -44,35 +76,36 @@ function createLeafletMap(){
         maxZoom: 17,
         id: 'mapbox/streets-v11',
         accessToken: 'pk.eyJ1IjoiYWpwMCIsImEiOiJjazN4cGd4MGQxNW1hM3F0NnU5M3Jiem80In0.71DleDv1Fm-ArumkU37BjA', // token to use mapbox
-    }).addTo(leafletMap);
+    }).addTo(map);
     // Put zoom buttons in top right
     L.control.zoom({
         position:'topright'
-    }).addTo(leafletMap);
+    }).addTo(map);
 
-    leafletMap.on('click', onMapClick); // Click map
-    leafletMap.on('moveend', onMapChange); // Pan finished
-    leafletMap.on('zoomend', onMapChange); // Zoom finished
+    map.on('click', onMapClick); // Click map
+    map.on('moveend', onMapChange); // Pan finished
+    map.on('zoomend', onMapChange); // Zoom finished
 
-    addPolygon();
+    addBoundary();
 }
 
 // When map is zoomed or panned set latitude and longitude inputs to where map is
 function onMapChange(){
     console.log('change');
-    let latLng = leafletMap.getCenter();
+    let latLng = map.getCenter();
     app.latitude = latLng.lat;
     app.longitude = latLng.lng;
 }
 
 let popup = L.popup();
 function onMapClick(e) {
-    popup.setLatLng(e.latlng).setContent("You clicked the map at " + e.latlng.toString()).openOn(leafletMap);
+    popup.setLatLng(e.latlng).setContent("You clicked the map at " + e.latlng.toString()).openOn(map);
 }
 
-function addPolygon(){
+// Puts polygon around St. Paul on map
+function addBoundary(){
     // Polygon for St. Paul
-    let polygon = L.polygon([
+    L.polygon([
         [44.987922, -93.207506],
         [44.991685, -93.005289],
         [44.891321, -93.004774],
@@ -80,50 +113,40 @@ function addPolygon(){
         [44.919649, -93.128541],
         [44.887429, -93.173517],
         [44.909195, -93.202013]
-    ], {fill: false, color: '#000'}).addTo(leafletMap);
+    ], {fill: false, color: '#000'}).addTo(map);
 }
 
-function crimeData(){
-    // By default, include crimes from 10/01/2019 to 10/31/2019
-    app.incidents = [];
-    let neighborhoods = {};
-
-    let apiUrl = 'http://localhost:8000/incidents?start_date=2019-10-01&end_date=2019-10-31&limit=10';
+function getIncidents(){
+    let apiUrl = 'http://localhost:8000/incidents?start_date=2019-10-01&end_date=2019-10-31';
     $.getJSON(apiUrl)
-    .then(data => {
-        for(let i in data){
-            let incident = data[i];
-            let neighborhood_name, incident_type;
-            $.when(
-                $.getJSON('http://localhost:8000/neighborhoods?id='+incident.neighborhood_number, (data) => {
-                    neighborhood_name = data['N'+incident.neighborhood_number];
-                    incident.neighborhood_name = neighborhood_name;
-                }),
-                $.getJSON('http://localhost:8000/codes?code='+incident.code, (data) => {
-                    incident_type = data['C'+incident.code];
-                    incident.incident_type = incident_type;
-                })
-            ).then(() => {
-                this.incidents.push(incident);
-            })
-        }
-    });
+        .then(data => {
+            app.incidents = data;
+        });
 }
 
-let neighborhoods = {};
+function getCodes(){
+    let apiUrl = 'http://localhost:8000/codes';
+    $.getJSON(apiUrl)
+        .then(data => {
+            for(let c in data){
+                app.codes[c.substring(1)] = data[c];
+            }
+        });
+}
+
 function setupNeighborhoods(){
     // Get all neighborhoods names
     $.getJSON('http://localhost:8000/neighborhoods')
         .then(data => {
             // Loop through neighborhood names
             for(let i=1; i<=17; i++){
-                neighborhoods[i] = {};
+                app.neighborhoods[i] = {};
                 let name = data['N'+i];
-                neighborhoods[i].name = name; // match code to name
+                app.neighborhoods[i].name = name; // match code to name
                 getNeighborhoodLatLng(name)
                     .then(data => {
-                        neighborhoods[i].latitude = parseFloat(data[0].lat);
-                        neighborhoods[i].longitude = parseFloat(data[0].lon);
+                        app.neighborhoods[i].latitude = parseFloat(data[0].lat);
+                        app.neighborhoods[i].longitude = parseFloat(data[0].lon);
                     });
             }
         });
@@ -148,44 +171,20 @@ function getLatLngFromAddress(){
     .then(data => {
         app.latitude = data[0].lat;
         app.longitude = data[0].lon;
-        leafletMap.panTo([app.latitude, app.longitude]);
+        map.panTo([app.latitude, app.longitude]);
     });
 }
 
-let markers = [];
 function popupsForNeighborhoods(){
-    markers.forEach(marker => {
+    app.markers.forEach(marker => {
         marker.remove();
     });
-    // 1 - 17
-    for(let n in neighborhoods){
-        if(neighborhoodOnMap(n)){
-
-            getIncidentsFromNeighborhood(n)
-                .then(data => {
-                    for(let i in data){
-                        app.incidents.push(data[i]);
-                    }
-                });
-
-            let latLng = [neighborhoods[n].latitude, neighborhoods[n].longitude];
-            let marker = L.marker(latLng, {title: 'test'}).addTo(leafletMap);
-            markers.push(marker);
+    console.log('c');
+    for(let n in app.neighborhoods){
+        if(app.neighborhoodsOnMap.includes(parseInt(n))){
+            let latLng = [ app.neighborhoods[n].latitude,  app.neighborhoods[n].longitude];
+            let marker = L.marker(latLng, {title: 'test'}).addTo(map);
+            app.markers.push(marker);
         }
     }
-}
-
-function neighborhoodOnMap(n){
-    let bounds = leafletMap.getBounds();
-    let lat = neighborhoods[n].latitude;
-    let lng = neighborhoods[n].longitude;
-    if(lat > bounds._southWest.lat && lat < bounds._northEast.lat && lng > bounds._southWest.lng && lng < bounds._northEast.lng) {
-        return true;
-    }
-    return false;
-}
-
-function getIncidentsFromNeighborhood(neighborhood){
-    let apiUrl = 'http://localhost:8000/incidents?start_date=2019-10-01&end_date=2019-10-31&id='+neighborhood;
-    return $.getJSON(apiUrl);
 }
