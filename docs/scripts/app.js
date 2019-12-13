@@ -82,7 +82,7 @@ function createLeafletMap(){
         position:'topright'
     }).addTo(map);
 
-    map.on('click', onMapClick); // Click map
+    // map.on('click', onMapClick); // Click map
     map.on('moveend', onMapChange); // Pan finished
     map.on('zoomend', onMapChange); // Zoom finished
 
@@ -143,36 +143,65 @@ function setupNeighborhoods(){
                 app.neighborhoods[i] = {};
                 let name = data['N'+i];
                 app.neighborhoods[i].name = name; // match code to name
+                // Get lat lng for each neighborhood
+                // name = name.match(/([^\/-]+)/)[0];
+                name = name.replace(/\//g, ', ');
+                name = name.replace(/-/g, ', ');
+                console.log(name);
                 getNeighborhoodLatLng(name)
                     .then(data => {
-                        app.neighborhoods[i].latitude = parseFloat(data[0].lat);
-                        app.neighborhoods[i].longitude = parseFloat(data[0].lon);
+                        if(data.length > 0) {
+                            app.neighborhoods[i].latitude = parseFloat(data[0].lat);
+                            app.neighborhoods[i].longitude = parseFloat(data[0].lon);
+                            // console.log(app.neighborhoods[i].latitude, app.neighborhoods[i].longitude)
+                        }
                     });
             }
         });
 }
 
 // Get the latitude and longitude for neighborhood using neighborhood name
-function getNeighborhoodLatLng(neighborhood){
+function getNeighborhoodLatLng(neighborhoodName){
     // neighborhood = 'Greater East Side'
     let country = 'United States',
         state = 'Minnesota',
         city = 'St. Paul';
-    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country='+country+'&state='+state+'&city='+city+'&q='+neighborhood;
+    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country='+country+'&state='+state+'&q='+neighborhoodName;
+    console.log(apiUrl);
     // return promise
     return $.getJSON(apiUrl);
 }
 
 // Get the latitude and longitude for inputted address
-function getLatLngFromAddress(){
+function getLatLngFromAddress(address){
     // 495 Sherburne Ave
-    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country=United States&state=MN&city=St. Paul&street='+app.address;
-    $.getJSON(apiUrl)
-    .then(data => {
-        app.latitude = data[0].lat;
-        app.longitude = data[0].lon;
-        map.panTo([app.latitude, app.longitude]);
-    });
+    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country=United States&state=MN&city=St. Paul&street='+address;
+    return $.getJSON(apiUrl)
+}
+
+function searchAddress(){
+    getLatLngFromAddress(app.address)
+        .then(data => {
+            app.latitude = data[0].lat;
+            app.longitude = data[0].lon;
+            map.panTo([app.latitude, app.longitude]);
+        });
+}
+
+function addIncidentMarker(address){
+    address = address.replace('X', '0');
+    console.log(address);
+    getLatLngFromAddress(address)
+        .then(data => {
+            if(data.length > 0) {
+                let lat = data[0].lat;
+                let lng = data[0].lon;
+                L.marker([lat, lng], {title: address}).addTo(map);
+                map.panTo([lat, lng]);
+            } else {
+                alert(address+' not found');
+            }
+        });
 }
 
 function popupsForNeighborhoods(){

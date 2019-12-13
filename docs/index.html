@@ -36,7 +36,7 @@
                 <br/>
                 Address
                 <input type="text"  v-model="address"/>
-                <button type="button" @click="getLatLngFromAddress">Search</button>
+                <button type="button" @click="searchAddress">Search</button>
                 <br/>
                 <button type="button" @click="filter">Filter</button>
                 <- Filter table to neighborhoods on map and add markers
@@ -56,7 +56,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)">
+                            <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block);">
                                 <td>{{ incident.block }}</td>
                                 <td>{{ incidentType(incident.code) }}</td>
                                 <td>{{ incident.date }}</td>

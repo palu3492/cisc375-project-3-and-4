@@ -46,3 +46,11 @@ td{
     border: 2px solid grey;
     padding: 0px 2px 0px 2px;
 }
+
+tr{
+    cursor: pointer;
+}
+
+tr:hover{
+    background: darkgrey;
+}
