@@ -1,10 +1,10 @@
 
 
-let app1;
+let app;
 
 function init() {
 
-    app1 = new Vue({
+    app = new Vue({
         el: "#app",
         data: {
             // Menu
@@ -53,7 +53,7 @@ function init() {
                 return this.codes[code]
             },
             removeIncidentMarkers: function(){
-                app1.incidentMarkers.forEach(marker => {
+                app.incidentMarkers.forEach(marker => {
                     marker.remove();
                 });
                 alert('Incident markers removed');
@@ -82,7 +82,7 @@ function init() {
 
 let map;
 function createLeafletMap(){
-    let stPaulLatLng = [app1.latitude, app1.longitude]; // Latitude and longitude of St. Paul
+    let stPaulLatLng = [app.latitude, app.longitude]; // Latitude and longitude of St. Paul
     // Create map with custom settings
     map = L.map('map', {
         minZoom: 13,
@@ -113,14 +113,14 @@ function createLeafletMap(){
 // When map is zoomed or panned set latitude and longitude inputs to where map is
 function onMapChange(){
     let latLng = map.getCenter();
-    app1.latitude = latLng.lat;
-    app1.longitude = latLng.lng;
+    app.latitude = latLng.lat;
+    app.longitude = latLng.lng;
     // updateAddress();
     updateNeighborhoodsOnMap();
 }
 
 function updateAddress(){
-    let apiUrl = 'https://nominatim.openstreetmap.org/reverse?format=json&lat='+app1.latitude+'&lon='+app1.longitude+'&zoom=18&addressdetails=1';
+    let apiUrl = 'https://nominatim.openstreetmap.org/reverse?format=json&lat='+app.latitude+'&lon='+app.longitude+'&zoom=18&addressdetails=1';
     $.getJSON(apiUrl)
         .then(data => {
             let addressParts = [];
@@ -131,9 +131,9 @@ function updateAddress(){
                 addressParts.push(data.address.road);
             }
             if(addressParts.length > 0) {
-                app1.address = addressParts.join(' ');
+                app.address = addressParts.join(' ');
             }else{
-                app1.address = 'No address';
+                app.address = 'No address';
             }
         })
 }
@@ -156,7 +156,7 @@ function getIncidents(){
     let apiUrl = 'http://localhost:8000/incidents?start_date=2019-10-01&end_date=2019-10-31';
     $.getJSON(apiUrl)
         .then(data => {
-            app1.incidents = data;
+            app.incidents = data;
         });
 }
 
@@ -165,13 +165,13 @@ function getCodes(){
     $.getJSON(apiUrl)
         .then(data => {
             for(let c in data){
-                app1.codes[c.substring(1)] = data[c];
+                app.codes[c.substring(1)] = data[c];
             }
         });
 }
 
 function populateNeighborhoods(){
-    app1.neighborhoods = {
+    app.neighborhoods = {
         1: {
             name: "Conway/Battlecreek/Highwood",
             latitude: 44.956758,
@@ -272,13 +272,13 @@ function getNeighborhoodLatLng(neighborhoodName){
 }
 
 function updateNeighborhoodsOnMap() {
-    app1.neighborhoodsOnMap = [];
-    for(let n in app1.neighborhoods) {
+    app.neighborhoodsOnMap = [];
+    for(let n in app.neighborhoods) {
         let bounds = map.getBounds();
-        let lat = app1.neighborhoods[n].latitude;
-        let lng = app1.neighborhoods[n].longitude;
+        let lat = app.neighborhoods[n].latitude;
+        let lng = app.neighborhoods[n].longitude;
         if (lat > bounds._southWest.lat && lat < bounds._northEast.lat && lng > bounds._southWest.lng && lng < bounds._northEast.lng) {
-            app1.neighborhoodsOnMap.push(parseInt(n));
+            app.neighborhoodsOnMap.push(parseInt(n));
         }
     }
 }
@@ -291,14 +291,14 @@ function getLatLngFromAddress(address){
 }
 
 function searchAddress(){
-    getLatLngFromAddress(app1.address)
+    getLatLngFromAddress(app.address)
         .then(data => {
             if(data.length > 0) {
-                app1.latitude = data[0].lat;
-                app1.longitude = data[0].lon;
-                map.panTo([app1.latitude, app1.longitude]);
+                app.latitude = data[0].lat;
+                app.longitude = data[0].lon;
+                map.panTo([app.latitude, app.longitude]);
             } else {
-                alert("Address '"+app1.address+"' not found")
+                alert("Address '"+app.address+"' not found")
             }
         });
 }
@@ -317,7 +317,7 @@ function addIncidentMarker(address, date, time, incident){
                 // Create a popup with date, time, incident, and delete button when hovering over that marker
                 let popup = L.popup({closeOnClick: false, autoClose: false}).setContent([address, date, time, incident].join('<br/> '));
                 let marker = L.marker([lat, lng], {icon: markerIcon, title: address}).bindPopup(popup).addTo(map);
-                app1.incidentMarkers.push(marker);
+                app.incidentMarkers.push(marker);
             } else {
                 alert("Address '"+address+"' not found");
             }
@@ -325,17 +325,17 @@ function addIncidentMarker(address, date, time, incident){
 }
 
 function neighborhoodsPopups(){
-    app1.neighborhoodMarkers.forEach(marker => {
+    app.neighborhoodMarkers.forEach(marker => {
         marker.remove();
     });
-    for(let n in app1.neighborhoods){
-        if(app1.neighborhoodsOnMap.includes(parseInt(n))){
-            let latLng = [app1.neighborhoods[n].latitude,  app1.neighborhoods[n].longitude];
-            let name = app1.neighborhoods[n].name;
-            let count = app1.neighborhoods[n].count;
+    for(let n in app.neighborhoods){
+        if(app.neighborhoodsOnMap.includes(parseInt(n))){
+            let latLng = [app.neighborhoods[n].latitude,  app.neighborhoods[n].longitude];
+            let name = app.neighborhoods[n].name;
+            let count = app.neighborhoods[n].count;
             let popup = L.popup({closeOnClick: false, autoClose: false}).setContent(name);
             let marker = L.marker(latLng, {title: name, id:'n'}).bindPopup(popup).addTo(map).openPopup();
-            app1.neighborhoodMarkers.push(marker);
+            app.neighborhoodMarkers.push(marker);
         }
     }
 }
