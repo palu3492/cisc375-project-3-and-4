@@ -17,7 +17,9 @@ function init() {
             neighborhoodsOnMap: [],
             codes: {},
             neighborhoodMarkers: [],
-            incidentMarkers: []
+            incidentMarkers: [],
+            open: true,
+            loaded: false
         },
         methods: {
             // When 'Go' is pressed
@@ -38,10 +40,6 @@ function init() {
             incidentType: function(code) {
                 return this.codes[code]
             },
-            filter: function(){
-                this.updateNeighborhoodsOnMap();
-                popupsForNeighborhoods();
-            },
             updateNeighborhoodsOnMap: function(){
                 this.neighborhoodsOnMap = [];
                 for(let n in this.neighborhoods) {
@@ -52,6 +50,9 @@ function init() {
                         this.neighborhoodsOnMap.push(parseInt(n));
                     }
                 }
+            },
+            toggle: function () {
+                this.open = !this.open;
             }
         }
     });
@@ -60,7 +61,6 @@ function init() {
     setupNeighborhoods();
     getCodes();
     getIncidents();
-    // addMarkers();
 }
 
 let map;
@@ -87,7 +87,6 @@ function createLeafletMap(){
         position:'topright'
     }).addTo(map);
 
-    // map.on('click', onMapClick); // Click map
     map.on('moveend', onMapChange); // Pan finished
     map.on('zoomend', onMapChange); // Zoom finished
 
@@ -100,10 +99,11 @@ function onMapChange(){
     app.latitude = latLng.lat;
     app.longitude = latLng.lng;
     updateAddress();
+    filter();
 }
 
 function updateAddress(){
-    let apiUrl = 'https://nominatim.openstreetmap.org/reverse?format=json&lat='+app.latitude+'&lon='+app.longitude+'&zoom=18&addressdetails=1';
+    let apiUrl = 'https://nominatim.openstreetmap.org/reverse?format=json&email=palu3492@stthomas.edu&lat='+app.latitude+'&lon='+app.longitude+'&zoom=18&addressdetails=1';
     $.getJSON(apiUrl)
         .then(data => {
             let addressParts = [];
@@ -119,11 +119,6 @@ function updateAddress(){
                 app.address = 'No address';
             }
         })
-}
-
-let popup = L.popup();
-function onMapClick(e) {
-    popup.setLatLng(e.latlng).setContent("You clicked the map at " + e.latlng.toString()).openOn(map);
 }
 
 // Puts polygon around St. Paul on map
@@ -162,6 +157,7 @@ function setupNeighborhoods(){
     // Get all neighborhoods names
     $.getJSON('http://localhost:8000/neighborhoods')
         .then(data => {
+            let promises = [];
             // Loop through neighborhood names
             for(let i=1; i<=17; i++){
                 app.neighborhoods[i] = {};
@@ -173,15 +169,21 @@ function setupNeighborhoods(){
                 name = name.replace(/\//g, ', ');
                 name = name.replace(/-/g, ', ');
                 console.log(name);
-                getNeighborhoodLatLng(name)
+                promises.push(getNeighborhoodLatLng(name)
                     .then(data => {
                         if(data.length > 0) {
                             app.neighborhoods[i].latitude = parseFloat(data[0].lat);
                             app.neighborhoods[i].longitude = parseFloat(data[0].lon);
                             // console.log(app.neighborhoods[i].latitude, app.neighborhoods[i].longitude)
                         }
-                    });
+                    })
+                );
             }
+            $.when(promises)
+                .then(() => {
+                    app.loaded = true;
+                    filter();
+                })
         });
 }
 
@@ -191,7 +193,7 @@ function getNeighborhoodLatLng(neighborhoodName){
     let country = 'United States',
         state = 'Minnesota',
         city = 'St. Paul';
-    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country='+country+'&state='+state+'&q='+neighborhoodName;
+    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&email=palu3492@stthomas.edu&country='+country+'&state='+state+'&q='+neighborhoodName;
     // return promise
     return $.getJSON(apiUrl);
 }
@@ -199,7 +201,7 @@ function getNeighborhoodLatLng(neighborhoodName){
 // Get the latitude and longitude for inputted address
 function getLatLngFromAddress(address){
     // 495 Sherburne Ave
-    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country=United States&state=MN&city=St. Paul&street='+address;
+    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&email=palu3492@stthomas.edu&country=United States&state=MN&city=St. Paul&street='+address;
     return $.getJSON(apiUrl)
 }
 
@@ -224,7 +226,9 @@ function addIncidentMarker(address){
             if(data.length > 0) {
                 let lat = data[0].lat;
                 let lng = data[0].lon;
-                app.incidentMarkers.push(L.marker([lat, lng], {title: address}).addTo(map));
+                let popup = L.popup({closeOnClick: false, autoClose: false}).setContent(address);
+                let marker = L.marker([lat, lng], {title: address}).bindPopup(popup).addTo(map).openPopup();
+                app.incidentMarkers.push(marker);
                 map.panTo([lat, lng]);
             } else {
                 alert("Address '"+address+"' not found");
@@ -245,4 +249,12 @@ function popupsForNeighborhoods(){
             app.neighborhoodMarkers.push(marker);
         }
     }
+}
+
+function filter(){
+    app.incidentMarkers.forEach(marker => {
+        marker.remove();
+    });
+    app.updateNeighborhoodsOnMap();
+    popupsForNeighborhoods();
 }

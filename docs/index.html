@@ -25,51 +25,60 @@
 
 <body onload="init()">
     <div id="app">
+        <div id="loading" v-if="!loaded"><img src="images/spinner.svg"/></div>
         <div id="map"></div>
         <div class="options">
-            <div>
-                Latitude
-                <input type="text" v-model="latitude"/>
-                Longitude
-                <input type="text" v-model="longitude"/>
-                <button type="button" @click="changeLatLng">Go</button>
-                <br/>
-                Address
-                <input type="text"  v-model="address"/>
-                <button type="button" @click="searchAddress">Search</button>
-                <br/>
-                <button type="button" @click="filter">Filter</button>
-                <- Filter table to neighborhoods on map and add markers
+            <div @click="toggle" id="open-button">
+                <b>
+                <span v-if="open"> < </span>
+                <span v-else> > </span>
+                </b>
             </div>
-            <div>
-                <div id="table">
-                    <table v-if="showTable">
-                        <thead>
-                            <tr>
-                                <th>Block</th>
-                                <th>Incident Type</th>
-                                <th>Date</th>
-                                <th>Incident</th>
-                                <th>Neighborhood Name</th>
-                                <th>Police Grid</th>
-                                <th>Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block);">
-                                <td>{{ incident.block }}</td>
-                                <td>{{ incidentType(incident.code) }}</td>
-                                <td>{{ incident.date }}</td>
-                                <td>{{ incident.incident }}</td>
-                                <td>{{ neighborhoodName(incident.neighborhood_number) }}</td>
-                                <td>{{ incident.police_grid }}</td>
-                                <td>{{ incident.time }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div v-if="open">
+                <div>
+                    Latitude
+                    <input type="text" v-model="latitude"/>
+                    Longitude
+                    <input type="text" v-model="longitude"/>
+                    <button type="button" @click="changeLatLng">Go</button>
+                    <br/>
+                    Address
+                    <input type="text"  v-model="address"/>
+                    <button type="button" @click="searchAddress">Search</button>
+                    <br/>
+                    <button type="button" @click="filter">Filter</button>
+                    <- Filter table to neighborhoods on map and add markers
                 </div>
-                <button type="button" @click="showTable = !showTable">show/hide table</button>
-                <span v-if="!showTable"> <- Table is hidden</span>
+                <div>
+                    <div id="table">
+                        <table v-if="showTable">
+                            <thead>
+                                <tr>
+                                    <th>Block</th>
+                                    <th>Incident Type</th>
+                                    <th>Date</th>
+                                    <th>Incident</th>
+                                    <th>Neighborhood Name</th>
+                                    <th>Police Grid</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block);">
+                                    <td>{{ incident.block }}</td>
+                                    <td>{{ incidentType(incident.code) }}</td>
+                                    <td>{{ incident.date }}</td>
+                                    <td>{{ incident.incident }}</td>
+                                    <td>{{ neighborhoodName(incident.neighborhood_number) }}</td>
+                                    <td>{{ incident.police_grid }}</td>
+                                    <td>{{ incident.time }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" @click="showTable = !showTable">show/hide table</button>
+                    <span v-if="!showTable"> <- Table is hidden</span>
+                </div>
             </div>
         </div>
     </div>

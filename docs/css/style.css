@@ -8,6 +8,23 @@ html, body{
     height: 100vh;
 }
 
+#open-button{
+    position: absolute;
+    right: -30px;
+    background: white;
+    padding: 10px 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+}
+
+#loading{
+    position: fixed;
+    left: calc(100vw/2 - 100px);
+    top: calc(100vh/2 - 200px);
+    z-index: 20000;
+}
+
 .options{
     position: fixed;
     top: 15px;
@@ -18,7 +35,7 @@ html, body{
     border-radius: 4px;
     box-shadow: 0 1px 5px rgba(0,0,0,0.65);
     max-height: calc(100vh - 30px);
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 
 input{
