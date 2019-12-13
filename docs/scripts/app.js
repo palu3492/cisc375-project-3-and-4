@@ -89,8 +89,29 @@ function createLeafletMap(){
 
     map.on('moveend', onMapChange); // Pan finished
     map.on('zoomend', onMapChange); // Zoom finished
-
+    populateNeighborhoodMarkers();
     addBoundary();
+}
+
+function populateNeighborhoodMarkers()
+{
+    L.marker([44.956758, -93.015139]).addTo(map);//.bindPopup(commited[0]+'crimes commited').openPopup();
+    L.marker([44.977519, -93.025290]).addTo(map);
+    L.marker([44.931369, -93.082249]).addTo(map);
+    L.marker([44.957164, -93.057100]).addTo(map);
+    L.marker([44.978208, -93.069673]).addTo(map);
+    L.marker([44.977405, -93.110969]).addTo(map);
+    L.marker([44.960265, -93.118686]).addTo(map);
+    L.marker([44.948581, -93.128205]).addTo(map);
+    L.marker([44.931735, -93.119224]).addTo(map);
+    L.marker([44.982860, -93.150844]).addTo(map);
+    L.marker([44.962891, -93.167436]).addTo(map);
+    L.marker([44.973546, -93.195991]).addTo(map);
+    L.marker([44.948401, -93.174050]).addTo(map);
+    L.marker([44.934301, -93.175363]).addTo(map);
+    L.marker([44.911489, -93.172075]).addTo(map);
+    L.marker([44.937493, -93.136353]).addTo(map);
+    L.marker([44.950459, -93.096462]).addTo(map);
 }
 
 // When map is zoomed or panned set latitude and longitude inputs to where map is
