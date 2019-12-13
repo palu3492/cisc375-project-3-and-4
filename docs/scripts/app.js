@@ -95,6 +95,22 @@ function onMapChange(){
     let latLng = map.getCenter();
     app.latitude = latLng.lat;
     app.longitude = latLng.lng;
+    updateAddress();
+}
+
+function updateAddress(){
+    let apiUrl = 'https://nominatim.openstreetmap.org/reverse?format=json&lat='+app.latitude+'&lon='+app.longitude+'&zoom=18&addressdetails=1';
+    $.getJSON(apiUrl)
+        .then(data => {
+            let addressParts = [];
+            if(data.address.house_number) {
+                addressParts.push(data.address.house_number);
+            }
+            if(data.address.road){
+                addressParts.push(data.address.road);
+            }
+            app.address = addressParts.join(' ');
+        })
 }
 
 let popup = L.popup();
