@@ -20,65 +20,57 @@
             integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
             crossorigin=""></script> <!-- Leaflet -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script> <!-- Vue -->
-    <script type="application/javascript" src="scripts/app.js"></script>
+    <script type="application/javascript" src="scripts/app1.js"></script>
 </head>
 
 <body onload="init()">
     <div id="app">
-        <div id="loading" v-if="!loaded"><img src="images/spinner.svg"/></div>
+        <!--<div id="loading" v-if="!loaded"><img src="images/spinner.svg"/></div>-->
         <div id="map"></div>
-        <div class="options">
-            <div @click="toggle" id="open-button">
-                <b>
-                <span v-if="open"> < </span>
-                <span v-else> > </span>
-                </b>
+        <div class="menu">
+            <div id="menu-title">
+                <img src="images/mapIcon.png"/>
+                <h4>St. Paul Crime Map</h4>
+                <img src="images/arrows.png" id="collapse" @click="toggleMenu"  :style="collapseImage"/>
             </div>
-            <div v-if="open">
-                <div>
-                    Latitude
-                    <input type="text" v-model="latitude"/>
-                    Longitude
-                    <input type="text" v-model="longitude"/>
-                    <button type="button" @click="changeLatLng">Go</button>
-                    <br/>
-                    Address
-                    <input type="text"  v-model="address"/>
-                    <button type="button" @click="searchAddress">Search</button>
-                    <br/>
-                    <button type="button" @click="filter">Filter</button>
-                    <- Filter table to neighborhoods on map and add markers
-                </div>
-                <div>
-                    <div id="table">
-                        <table v-if="showTable">
-                            <thead>
-                                <tr>
-                                    <th>Block</th>
-                                    <th>Incident Type</th>
-                                    <th>Date</th>
-                                    <th>Incident</th>
-                                    <th>Neighborhood Name</th>
-                                    <th>Police Grid</th>
-                                    <th>Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block);">
-                                    <td>{{ incident.block }}</td>
-                                    <td>{{ incidentType(incident.code) }}</td>
-                                    <td>{{ incident.date }}</td>
-                                    <td>{{ incident.incident }}</td>
-                                    <td>{{ neighborhoodName(incident.neighborhood_number) }}</td>
-                                    <td>{{ incident.police_grid }}</td>
-                                    <td>{{ incident.time }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <button type="button" @click="showTable = !showTable">show/hide table</button>
-                    <span v-if="!showTable"> <- Table is hidden</span>
-                </div>
+            <div id="options" v-if="showMenu">
+                Latitude
+                <input type="text" v-model="latitude"/>
+                Longitude
+                <input type="text" v-model="longitude"/>
+                <button type="button" @click="changeLatLng">Go</button>
+                <br/>
+                Address
+                <input type="text"  v-model="address"/>
+                <button type="button" @click="searchAddress">Search</button>
+                <button type="button" @click="removeIncidentMarkers">Remove incident markers</button>
+            </div>
+            <div id="table" v-if="showMenu">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Block</th>
+                            <th>Incident Type</th>
+                            <th>Date</th>
+                            <th>Incident</th>
+                            <th>Neighborhood Name</th>
+                            <th>Police Grid</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="incidents.length < 1"><td>No neighborhoods visible on map</td></tr>
+                        <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block, incident.date, incident.time, incident.incident);" :style="violentCrimeBg(incident.code)">
+                            <td>{{ incident.block }}</td>
+                            <td>{{ incidentType(incident.code) }}</td>
+                            <td>{{ incident.date }}</td>
+                            <td>{{ incident.incident }}</td>
+                            <td>{{ neighborhoodName(incident.neighborhood_number) }}</td>
+                            <td>{{ incident.police_grid }}</td>
+                            <td>{{ incident.time }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

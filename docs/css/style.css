@@ -8,14 +8,12 @@ html, body{
     height: 100vh;
 }
 
-#open-button{
-    position: absolute;
-    right: -30px;
-    background: white;
-    padding: 10px 5px;
-    cursor: pointer;
-    border-radius: 4px;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+#options{
+    border-top: 1px solid #DADCE0;
+}
+
+#options > * {
+    margin-top: 5px;
 }
 
 #loading{
@@ -25,17 +23,44 @@ html, body{
     z-index: 20000;
 }
 
-.options{
+#menu-title{
+    padding: 3px;
+}
+#menu-title > *{
+    display: inline;
+    vertical-align:middle
+}
+
+#collapse{
+    float: right;
+    cursor: pointer;
+}
+#collapse:hover{
+    background: #00000014;
+}
+
+#table{
+    max-height: 70vh;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-top: 10px;
+    padding-right: 3px;
+}
+
+#table > * {
+    font-size: 0.75em;
+}
+
+.menu{
     position: fixed;
     top: 15px;
     left: 15px;
     z-index: 1000;
     background: #ffffff;
     padding: 5px;
-    border-radius: 4px;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.65);
     max-height: calc(100vh - 30px);
-    /*overflow: hidden;*/
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 -1px 0px rgba(0,0,0,0.02);
 }
 
 input{
@@ -50,24 +75,17 @@ button{
     outline: none;
 }
 
-#table{
-    max-height: 70vh;
-    overflow: scroll;
-}
-
-#table > * {
-    font-size: 0.75em;
-}
-
 td{
-    border: 2px solid grey;
-    padding: 0px 2px 0px 2px;
+    padding: 5px 0px;
+    text-indent: 5px;
 }
 
 tr{
     cursor: pointer;
+    border-bottom: 1px solid #DADCE0;
 }
 
 tr:hover{
-    background: darkgrey;
+    /*font-weight: 700;*/
+    text-shadow: 1px 0px #000000;
 }

@@ -166,7 +166,7 @@ app.get('/incidents', (req, res) => {
 });
 
 // Build the SQL query for getting all crime incidents and when and where they happened
-// the params can filter by any database column
+// the params can neighborhoodUpdate by any database column
 function buildSqlQueryForIncidents(params){
     let sql;
     // Build SQL query using all optional URL params
