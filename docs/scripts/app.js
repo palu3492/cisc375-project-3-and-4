@@ -14,9 +14,10 @@ function init() {
             address: "",
             visibleNeighborhoods: [],
             neighborhoods: {},
-            neighborhoodsOnMap: [1, 2],
+            neighborhoodsOnMap: [],
             codes: {},
-            markers: []
+            neighborhoodMarkers: [],
+            incidentMarkers: []
         },
         methods: {
             // When 'Go' is pressed
@@ -25,7 +26,11 @@ function init() {
                 map.panTo([this.latitude, this.longitude]);
             },
             visible: function(neighborhoodNumber) {
-                return this.neighborhoodsOnMap.includes(neighborhoodNumber);
+                if(this.neighborhoodsOnMap.includes(neighborhoodNumber)){
+                    this.neighborhoods[neighborhoodNumber].count += 1;
+                    return true;
+                }
+                return false;
             },
             neighborhoodName: function(neighborhoodNumber) {
                 return this.neighborhoods[neighborhoodNumber].name
@@ -91,7 +96,6 @@ function createLeafletMap(){
 
 // When map is zoomed or panned set latitude and longitude inputs to where map is
 function onMapChange(){
-    console.log('change');
     let latLng = map.getCenter();
     app.latitude = latLng.lat;
     app.longitude = latLng.lng;
@@ -109,7 +113,11 @@ function updateAddress(){
             if(data.address.road){
                 addressParts.push(data.address.road);
             }
-            app.address = addressParts.join(' ');
+            if(addressParts.length > 0) {
+                app.address = addressParts.join(' ');
+            }else{
+                app.address = 'No address';
+            }
         })
 }
 
@@ -157,6 +165,7 @@ function setupNeighborhoods(){
             // Loop through neighborhood names
             for(let i=1; i<=17; i++){
                 app.neighborhoods[i] = {};
+                app.neighborhoods[i].count = 0;
                 let name = data['N'+i];
                 app.neighborhoods[i].name = name; // match code to name
                 // Get lat lng for each neighborhood
@@ -183,7 +192,6 @@ function getNeighborhoodLatLng(neighborhoodName){
         state = 'Minnesota',
         city = 'St. Paul';
     let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country='+country+'&state='+state+'&q='+neighborhoodName;
-    console.log(apiUrl);
     // return promise
     return $.getJSON(apiUrl);
 }
@@ -198,9 +206,13 @@ function getLatLngFromAddress(address){
 function searchAddress(){
     getLatLngFromAddress(app.address)
         .then(data => {
-            app.latitude = data[0].lat;
-            app.longitude = data[0].lon;
-            map.panTo([app.latitude, app.longitude]);
+            if(data.length > 0) {
+                app.latitude = data[0].lat;
+                app.longitude = data[0].lon;
+                map.panTo([app.latitude, app.longitude]);
+            } else {
+                alert("Address '"+app.address+"' not found")
+            }
         });
 }
 
@@ -212,24 +224,25 @@ function addIncidentMarker(address){
             if(data.length > 0) {
                 let lat = data[0].lat;
                 let lng = data[0].lon;
-                L.marker([lat, lng], {title: address}).addTo(map);
+                app.incidentMarkers.push(L.marker([lat, lng], {title: address}).addTo(map));
                 map.panTo([lat, lng]);
             } else {
-                alert(address+' not found');
+                alert("Address '"+address+"' not found");
             }
         });
 }
 
 function popupsForNeighborhoods(){
-    app.markers.forEach(marker => {
+    app.neighborhoodMarkers.forEach(marker => {
         marker.remove();
     });
-    console.log('c');
     for(let n in app.neighborhoods){
         if(app.neighborhoodsOnMap.includes(parseInt(n))){
-            let latLng = [ app.neighborhoods[n].latitude,  app.neighborhoods[n].longitude];
-            let marker = L.marker(latLng, {title: 'test'}).addTo(map);
-            app.markers.push(marker);
+            let latLng = [app.neighborhoods[n].latitude,  app.neighborhoods[n].longitude];
+            let name = app.neighborhoods[n].name;
+            let popup = L.popup({closeOnClick: false, autoClose: false}).setContent(name);
+            let marker = L.marker(latLng, {title: name}).bindPopup(popup).addTo(map).openPopup();
+            app.neighborhoodMarkers.push(marker);
         }
     }
 }
