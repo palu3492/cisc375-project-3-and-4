@@ -24,7 +24,13 @@ function init() {
             loaded: false,
             violentCrimes: {
                 1: ""
-            }
+            },
+            dateStart: "",
+            dateEnd: "",
+            timeStart: "",
+            timeEnd: "",
+            incidentFilter: {},
+            neighborhoodFilter: {}
         },
         computed: {
             collapseImage: function(){

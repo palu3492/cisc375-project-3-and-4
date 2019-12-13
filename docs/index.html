@@ -33,19 +33,42 @@
                 <h4>St. Paul Crime Map</h4>
                 <img src="images/arrows.png" id="collapse" @click="toggleMenu"  :style="collapseImage"/>
             </div>
-            <div id="options" v-if="showMenu">
-                Latitude
-                <input type="text" v-model="latitude"/>
-                Longitude
-                <input type="text" v-model="longitude"/>
-                <button type="button" @click="changeLatLng">Go</button>
-                <br/>
-                Address
-                <input type="text"  v-model="address"/>
-                <button type="button" @click="searchAddress">Search</button>
-                <button type="button" @click="removeIncidentMarkers">Remove incident markers</button>
+            <div id="top" v-if="showMenu">
+                <div id="options">
+                    Latitude
+                    <input type="text" v-model="latitude"/>
+                    Longitude
+                    <input type="text" v-model="longitude"/>
+                    <button type="button" @click="changeLatLng">Go</button>
+                    <br/>
+                    Address
+                    <input type="text"  v-model="address"/>
+                    <button type="button" @click="searchAddress">Search</button>
+                    <button type="button" @click="removeIncidentMarkers">Remove incident markers</button>
+                </div>
+                <div id="filter">
+                    Incident type
+                    <select><option v-for="n in incidentFilter">{{ n.name }}</option></select>
+                    <br/>
+                    Neighborhood name
+                    <select><option v-for="n in neighborhoodFilter">{{ n.name }}</option></select>
+                    <br/>
+                    Date range
+                    <input type="text" placeholder="Start" v-model="dateStart"/>
+                    <input type="text" placeholder="End" v-model="dateEnd"/>
+                    <br/>
+                    Time range
+                    <input type="text" placeholder="Start" v-model="timeStart"/>
+                    <input type="text" placeholder="End" v-model="timeEnd"/>
+                </div>
             </div>
             <div id="table" v-if="showMenu">
+                <div>
+                    <span>Crime type legend:</span>
+                    <span class="color" style="background:#ffaaaa">Violent</span>
+                    <span class="color" style="background:#ffffaa">Property</span>
+                    <span class="color" style="background:#aaffaa">Other</span>
+                </div>
                 <table>
                     <thead>
                         <tr>

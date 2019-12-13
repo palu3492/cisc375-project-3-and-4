@@ -9,11 +9,16 @@ html, body{
 }
 
 #options{
-    border-top: 1px solid #DADCE0;
+    padding-right: 20px;
 }
 
 #options > * {
     margin-top: 5px;
+}
+
+#filter{
+    padding-left: 20px;
+    border-left: 2px solid #DADCE0;
 }
 
 #loading{
@@ -51,6 +56,16 @@ html, body{
     font-size: 0.75em;
 }
 
+#top{
+    border-top: 1px solid #DADCE0;
+    border-bottom: 1px solid #DADCE0;
+    vertical-align: top;
+    padding-bottom: 10px;
+}
+#top > div{
+    display: inline-block;
+    vertical-align: top;
+}
 .menu{
     position: fixed;
     top: 15px;
@@ -61,6 +76,13 @@ html, body{
     max-height: calc(100vh - 30px);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 -1px 0px rgba(0,0,0,0.02);
+}
+
+.color{
+    color: black;
+    font-weight: bold;
+    padding: 5px;
+    margin-right: 6px;
 }
 
 input{
