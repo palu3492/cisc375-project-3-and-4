@@ -45,8 +45,6 @@
                     Address
                     <input type="text"  v-model="address"/>
                     <button type="button" @click="searchAddress">Search</button>
-                    <span class="separator"></span>
-                    <button type="button" @click="removeIncidentMarkers">Remove incident markers</button>
                 </div>
                 <div class="title">Incident Filters</div>
                 <div id="filters" class="menu-child-container">
@@ -87,6 +85,8 @@
                         <span class="legend" style="background:#ffaaaa">Violent</span>
                         <span class="legend" style="background:#ffffaa">Property</span>
                         <span class="legend" style="background:#aaffaa">Other</span>
+                        <span>Click an incident to make it appear on Map</span>
+                        <button type="button" @click="removeIncidentMarkers">Remove all markers</button>
                     </div>
                     <table>
                         <thead>
