@@ -1,4 +1,4 @@
-html, body{
+html, body, #app{
     width: 100vw;
     height: 100vh;
 }
@@ -8,29 +8,24 @@ html, body{
     height: 100vh;
 }
 
-#options{
-    padding-right: 20px;
-}
-
-#options > * {
-    margin-top: 5px;
-}
-
-#filter{
-    padding-left: 20px;
-    border-left: 2px solid #DADCE0;
-}
-
-#loading{
+#menu{
+    max-width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
     position: fixed;
-    left: calc(100vw/2 - 100px);
-    top: calc(100vh/2 - 200px);
-    z-index: 20000;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background: #ffffff;
+    margin: 10px;
+    border-radius: 8px;
+    padding: 7px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 -1px 0px rgba(0,0,0,0.02);
 }
 
 #menu-title{
-    padding: 3px;
+    padding-bottom: 5px;
 }
+
 #menu-title > *{
     display: inline;
     vertical-align:middle
@@ -39,52 +34,79 @@ html, body{
 #collapse{
     float: right;
     cursor: pointer;
+    margin-left: 10px;
 }
 #collapse:hover{
     background: #00000014;
+}
+
+#menu-body > div{
+    border-top: 1px solid #DADCE0;
+}
+
+#map-control{
+
+}
+
+#filters > div{
+    display: inline-block;
+    padding-right: 10px;
+    vertical-align: top;
 }
 
 #table{
     max-height: 70vh;
     overflow-y: scroll;
     overflow-x: hidden;
-    padding-top: 10px;
-    padding-right: 3px;
-}
-
-#table > * {
+    border-top: 1px solid #DADCE0;
     font-size: 0.75em;
 }
 
-#top{
-    border-top: 1px solid #DADCE0;
-    border-bottom: 1px solid #DADCE0;
-    vertical-align: top;
-    padding-bottom: 10px;
-}
-#top > div{
-    display: inline-block;
-    vertical-align: top;
-}
-.menu{
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1000;
-    background: #ffffff;
-    padding: 5px;
-    max-height: calc(100vh - 30px);
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 -1px 0px rgba(0,0,0,0.02);
-}
 
-.color{
+
+/*#loading{*/
+    /*position: fixed;*/
+    /*left: calc(100vw/2 - 100px);*/
+    /*top: calc(100vh/2 - 200px);*/
+    /*z-index: 20000;*/
+/*}*/
+
+
+.title{
+    margin: 0;
+    font-weight: 700;
+    font-size: 0.9rem;
+    background: #00000017;
+}
+.menu-child-container{
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+.filter-title{
+    text-decoration: underline;
+    display: block;
+}
+.checkboxes{
+    max-height: 100px;
+    overflow-y: scroll;
+}
+.date-time-input{
+    width: 100px;
+}
+.legend{
     color: black;
     font-weight: bold;
     padding: 5px;
     margin-right: 6px;
 }
-
+.leaflet-popup-content{
+    margin: 5px;
+    margin-right: 18px;
+}
+ul{
+    list-style-type: none;
+    padding: 0;
+}
 input{
     background: none;
     border: none;
@@ -97,7 +119,7 @@ button{
     outline: none;
 }
 
-td{
+td, th{
     padding: 5px 0px;
     text-indent: 5px;
 }

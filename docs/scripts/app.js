@@ -25,12 +25,14 @@ function init() {
             violentCrimes: {
                 1: ""
             },
-            dateStart: "",
-            dateEnd: "",
+            dateStart: "2019-10-01",
+            dateEnd: "2019-10-31",
             timeStart: "",
             timeEnd: "",
             incidentFilter: {},
-            neighborhoodFilter: {}
+            neighborhoodFilter: {},
+            port: 8000,
+            viewFilters: false
         },
         computed: {
             collapseImage: function(){
@@ -65,15 +67,14 @@ function init() {
                 alert('Incident markers removed');
             },
             violentCrimeBg: function(code){
-                // violent crimes
-                // property crimes
-                // other
-                // code = code.substring(1);
                 if(110 <= code && code <= 566){
+                    // violent
                     return "background: #ffaaaa;;"
                 } else if (600 <= code && code <= 1436){
+                    // property
                     return "background: #ffffaa;"
                 }
+                // other
                 return "background: #aaffaa;"
             }
         }
@@ -149,17 +150,49 @@ function addBoundary(){
     // Polygon for St. Paul
     L.polygon([
         [44.987922, -93.207506],
-        [44.991685, -93.005289],
+        [44.987922, -93.186735],
+        [44.977480, -93.186735],
+        [44.977480, -93.167271],
+        [44.991881, -93.167271],
+        [44.991881, -93.059019],
+        [44.979665, -93.047517],
+        [44.991881, -93.052495],
+        [44.991881, -93.005289],
         [44.891321, -93.004774],
+        [44.891321, -93.022798],
         [44.919406, -93.050779],
         [44.919649, -93.128541],
+        [44.894726, -93.151201],
         [44.887429, -93.173517],
         [44.909195, -93.202013]
     ], {fill: false, color: '#000'}).addTo(map);
 }
 
 function getIncidents(){
-    let apiUrl = 'http://localhost:8000/incidents?start_date=2019-10-01&end_date=2019-10-31';
+    let apiUrl = 'http://localhost:8000/incidents?';
+    let filter = [];
+    if(app.dateStart){
+        let date = 'start_date='+app.dateStart;
+        if(app.timeStart){
+            date += 'T'+app.timeStart
+        }
+        filter.push(date);
+    }
+    if(app.dateEnd){
+        let date = 'end_date='+app.dateEnd;
+        if(app.timeEnd){
+            date += 'T'+app.timeStart
+        }
+        filter.push(date);
+    }
+
+    // code incident_type, use
+    console.log(app.codes);
+    // id neighborhood_name, use name
+
+
+    apiUrl += filter.join('&');
+    console.log(apiUrl);
     $.getJSON(apiUrl)
         .then(data => {
             app.incidents = data;
@@ -309,11 +342,30 @@ function searchAddress(){
         });
 }
 
-let markerIcon = L.icon({
-    iconUrl: 'images/marker-icon.png',
-    iconSize: [25, 41]
-});
-function addIncidentMarker(address, date, time, incident){
+let icons = {
+    violent : 'images/gun-icon.png',
+    property : 'images/fist-icon.png',
+    other : 'images/other-icon.png'
+};
+function getMarkerIcon(code){
+    let image;
+    if(110 <= code && code <= 566){
+        // violent
+        image = icons.violent;
+    } else if (600 <= code && code <= 1436){
+        // property
+        image = icons.property;
+    } else{
+        // other
+        image = icons.other;
+    }
+    return L.icon({
+        iconUrl: image,
+        iconSize: [40, 40],
+        popupAnchor: [0, -7]
+    });
+}
+function addIncidentMarker(address, date, time, incident, code){
     address = address.replace('X', '0');
     getLatLngFromAddress(address)
         .then(data => {
@@ -321,8 +373,8 @@ function addIncidentMarker(address, date, time, incident){
                 let lat = data[0].lat;
                 let lng = data[0].lon;
                 // Create a popup with date, time, incident, and delete button when hovering over that marker
-                let popup = L.popup({closeOnClick: false, autoClose: false}).setContent([address, date, time, incident].join('<br/> '));
-                let marker = L.marker([lat, lng], {icon: markerIcon, title: address}).bindPopup(popup).addTo(map);
+                let popup = L.popup({closeOnClick: false, autoClose: false}).setContent([address, date+' '+time, incident].join('<br/> '));
+                let marker = L.marker([lat, lng], {icon: getMarkerIcon(code), title: address}).bindPopup(popup).addTo(map);
                 app.incidentMarkers.push(marker);
             } else {
                 alert("Address '"+address+"' not found");
@@ -330,23 +382,26 @@ function addIncidentMarker(address, date, time, incident){
         });
 }
 
+let neighborhoodIcon = L.icon({
+    iconUrl: 'images/neighborhood-icon.png',
+    iconSize: [40, 25],
+    popupAnchor: [0, -7]
+});
 function neighborhoodsPopups(){
-    app.neighborhoodMarkers.forEach(marker => {
-        marker.remove();
-    });
     for(let n in app.neighborhoods){
-        if(app.neighborhoodsOnMap.includes(parseInt(n))){
-            let latLng = [app.neighborhoods[n].latitude,  app.neighborhoods[n].longitude];
-            let name = app.neighborhoods[n].name;
-            let count = app.neighborhoods[n].count;
-            let popup = L.popup({closeOnClick: false, autoClose: false}).setContent(name);
-            let marker = L.marker(latLng, {title: name, id:'n'}).bindPopup(popup).addTo(map).openPopup();
-            app.neighborhoodMarkers.push(marker);
-        }
+        let latLng = [app.neighborhoods[n].latitude,  app.neighborhoods[n].longitude];
+        let name = app.neighborhoods[n].name;
+        let popup = L.popup({closeOnClick: false, autoClose: false}).setContent(name);
+        let marker = L.marker(latLng, {title: name, icon:neighborhoodIcon}).bindPopup(popup).addTo(map).openPopup();
+        // app.neighborhoodMarkers.push(marker);
     }
 }
 
 function neighborhoodUpdate(){
     updateNeighborhoodsOnMap();
     neighborhoodsPopups();
+}
+
+function filter(){
+
 }

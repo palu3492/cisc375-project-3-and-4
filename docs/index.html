@@ -6,13 +6,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Style -->
-    <link rel="stylesheet" href="css/style.css"/>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
           crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
           integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
           crossorigin=""/>
+    <link rel="stylesheet" href="css/style.css"/>
     <!-- Scripts -->
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> <!-- jQuery -->
@@ -27,73 +27,94 @@
     <div id="app">
         <!--<div id="loading" v-if="!loaded"><img src="images/spinner.svg"/></div>-->
         <div id="map"></div>
-        <div class="menu">
+        <div id="menu">
             <div id="menu-title">
                 <img src="images/mapIcon.png"/>
                 <h4>St. Paul Crime Map</h4>
                 <img src="images/arrows.png" id="collapse" @click="toggleMenu"  :style="collapseImage"/>
             </div>
-            <div id="top" v-if="showMenu">
-                <div id="options">
+            <div id="menu-body" v-if="showMenu">
+                <div class="title">Map Controls</div>
+                <div id="map-control" class="menu-child-container">
                     Latitude
                     <input type="text" v-model="latitude"/>
                     Longitude
                     <input type="text" v-model="longitude"/>
                     <button type="button" @click="changeLatLng">Go</button>
-                    <br/>
+                    <span class="separator"></span>
                     Address
                     <input type="text"  v-model="address"/>
                     <button type="button" @click="searchAddress">Search</button>
+                    <span class="separator"></span>
                     <button type="button" @click="removeIncidentMarkers">Remove incident markers</button>
                 </div>
-                <div id="filter">
-                    Incident type
-                    <select><option v-for="n in incidentFilter">{{ n.name }}</option></select>
-                    <br/>
-                    Neighborhood name
-                    <select><option v-for="n in neighborhoodFilter">{{ n.name }}</option></select>
-                    <br/>
-                    Date range
-                    <input type="text" placeholder="Start" v-model="dateStart"/>
-                    <input type="text" placeholder="End" v-model="dateEnd"/>
-                    <br/>
-                    Time range
-                    <input type="text" placeholder="Start" v-model="timeStart"/>
-                    <input type="text" placeholder="End" v-model="timeEnd"/>
+                <div class="title">Incident Filters</div>
+                <div id="filters" class="menu-child-container">
+                    <div>
+                        <span class="filter-title">Incident type</span>
+                        <ul class="checkboxes">
+                            <li v-for="code in codes">
+                                <input type="checkbox">{{ code }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="filter-title">Neighborhood name</span>
+                        <ul class="checkboxes">
+                            <li v-for="n in neighborhoods">
+                                <input type="checkbox">{{ n.name }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="filter-title">Date and time</span>
+                        Date range
+                        <input type="text" class="date-time-input" placeholder="Start" v-model="dateStart"/>
+                        <input type="text" class="date-time-input" placeholder="End" v-model="dateEnd"/>
+                        <br/>
+                        Time range
+                        <input type="text" class="date-time-input" placeholder="Start" v-model="timeStart"/>
+                        <input type="text" class="date-time-input" placeholder="End" v-model="timeEnd"/>
+                        <br/>
+                        <br/>
+                        <button type="button" @click="getIncidents">Filter Incidents</button>
+                    </div>
                 </div>
-            </div>
-            <div id="table" v-if="showMenu">
-                <div>
-                    <span>Crime type legend:</span>
-                    <span class="color" style="background:#ffaaaa">Violent</span>
-                    <span class="color" style="background:#ffffaa">Property</span>
-                    <span class="color" style="background:#aaffaa">Other</span>
+                <div class="title">Incident Table</div>
+                <div id="table" class="menu-child-container">
+                    <div>
+                        <span>Crime type legend:</span>
+                        <span class="legend" style="background:#ffaaaa">Violent</span>
+                        <span class="legend" style="background:#ffffaa">Property</span>
+                        <span class="legend" style="background:#aaffaa">Other</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Block</th>
+                                <th>Incident Type</th>
+                                <th>Date</th>
+                                <th>Incident</th>
+                                <th>Neighborhood Name</th>
+                                <th>Police Grid</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="incidents.length < 1"><td>No neighborhoods visible on map</td></tr>
+                            <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block, incident.date, incident.time, incident.incident, incident.code);" :style="violentCrimeBg(incident.code)">
+                                <td>{{ incident.block }}</td>
+                                <td>{{ incidentType(incident.code) }}</td>
+                                <td>{{ incident.date }}</td>
+                                <td>{{ incident.incident }}</td>
+                                <td>{{ neighborhoodName(incident.neighborhood_number) }}</td>
+                                <td>{{ incident.police_grid }}</td>
+                                <td>{{ incident.time }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Block</th>
-                            <th>Incident Type</th>
-                            <th>Date</th>
-                            <th>Incident</th>
-                            <th>Neighborhood Name</th>
-                            <th>Police Grid</th>
-                            <th>Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-if="incidents.length < 1"><td>No neighborhoods visible on map</td></tr>
-                        <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block, incident.date, incident.time, incident.incident);" :style="violentCrimeBg(incident.code)">
-                            <td>{{ incident.block }}</td>
-                            <td>{{ incidentType(incident.code) }}</td>
-                            <td>{{ incident.date }}</td>
-                            <td>{{ incident.incident }}</td>
-                            <td>{{ neighborhoodName(incident.neighborhood_number) }}</td>
-                            <td>{{ incident.police_grid }}</td>
-                            <td>{{ incident.time }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+
             </div>
         </div>
     </div>
