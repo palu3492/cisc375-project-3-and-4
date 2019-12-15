@@ -91,7 +91,9 @@ html, body, #app{
     margin: 10px;
     margin-left: 1px;
     font-size: 0.75em;
-    background: #e0020214;
+    background: #00000073;
+    outline: none; /* This should be covered under 'button'?? (look below) but okay? */
+    color: white;
 }
 #table{
     font-size: 0.75em;
