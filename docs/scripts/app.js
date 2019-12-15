@@ -110,7 +110,7 @@ function createLeafletMap(){
     let stPaulLatLng = [app.latitude, app.longitude]; // Latitude and longitude of St. Paul
     // Create map with custom settings
     map = L.map('map', {
-        minZoom: 13,
+        minZoom: 12,
         maxZoom: 18,
         maxBounds: [[44.875822, -92.984848],[44.99564, -93.229122]],
         center: stPaulLatLng,
@@ -187,7 +187,7 @@ function addBoundary(){
 }
 
 function getIncidents(){
-    let apiUrl = 'http://localhost:'+app.port+'/incidents?';
+    let apiUrl = 'http://cisc-dean.stthomas.edu:'+app.port+'/incidents?';
     let filter = [];
     if(app.dateStart){
         let date = 'start_date='+app.dateStart;
@@ -237,7 +237,7 @@ function addCrimeAmounts(){
 }
 
 function getCodes(){
-    let apiUrl = 'http://localhost:'+app.port+'/codes';
+    let apiUrl = 'http://cisc-dean.stthomas.edu:'+app.port+'/codes';
     $.getJSON(apiUrl)
         .then(data => {
             for(let c in data){
