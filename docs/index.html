@@ -51,16 +51,16 @@
                     <div>
                         <span class="filter-title">Incident type</span>
                         <ul class="checkboxes">
-                            <li v-for="code in codes">
-                                <input type="checkbox">{{ code }}
+                            <li v-for="(name, code) in codes">
+                                <input type="checkbox" :value="code" v-model="incidentFilter">{{ name }}
                             </li>
                         </ul>
                     </div>
                     <div>
                         <span class="filter-title">Neighborhood name</span>
                         <ul class="checkboxes">
-                            <li v-for="n in neighborhoods">
-                                <input type="checkbox">{{ n.name }}
+                            <li v-for="(n, id) in neighborhoods">
+                                <input type="checkbox" :value="id" v-model="neighborhoodFilter">{{ n.name }}
                             </li>
                         </ul>
                     </div>
@@ -74,47 +74,50 @@
                         <input type="text" class="date-time-input" placeholder="Start" v-model="timeStart"/>
                         <input type="text" class="date-time-input" placeholder="End" v-model="timeEnd"/>
                         <br/>
+                        Limit
+                        <input type="text" class="date-time-input" placeholder="" v-model="limit"/>
                         <br/>
-                        <button type="button" @click="getIncidents">Filter Incidents</button>
+                        <button type="button" id="filter-button" @click="getIncidents">Filter Incidents</button>
                     </div>
                 </div>
                 <div class="title">Incident Table</div>
                 <div id="table" class="menu-child-container">
-                    <div>
+                    <div id="table-legend">
                         <span>Crime type legend:</span>
                         <span class="legend" style="background:#ffaaaa">Violent</span>
                         <span class="legend" style="background:#ffffaa">Property</span>
                         <span class="legend" style="background:#aaffaa">Other</span>
-                        <span>Click an incident to make it appear on Map</span>
+                        <span>Click an incident to mark it on map</span>
                         <button type="button" @click="removeIncidentMarkers">Remove all markers</button>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Block</th>
-                                <th>Incident Type</th>
-                                <th>Date</th>
-                                <th>Incident</th>
-                                <th>Neighborhood Name</th>
-                                <th>Police Grid</th>
-                                <th>Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-if="incidents.length < 1"><td>No neighborhoods visible on map</td></tr>
-                            <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block, incident.date, incident.time, incident.incident, incident.code);" :style="violentCrimeBg(incident.code)">
-                                <td>{{ incident.block }}</td>
-                                <td>{{ incidentType(incident.code) }}</td>
-                                <td>{{ incident.date }}</td>
-                                <td>{{ incident.incident }}</td>
-                                <td>{{ neighborhoodName(incident.neighborhood_number) }}</td>
-                                <td>{{ incident.police_grid }}</td>
-                                <td>{{ incident.time }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div id="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Block</th>
+                                    <th>Incident Type</th>
+                                    <th>Date</th>
+                                    <th>Incident</th>
+                                    <th>Neighborhood Name</th>
+                                    <th>Police Grid</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="incidents.length < 1"><td>No neighborhoods visible on map</td></tr>
+                                <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block, incident.date, incident.time, incident.incident, incident.code);" :style="violentCrimeBg(incident.code)">
+                                    <td>{{ incident.block }}</td>
+                                    <td>{{ incidentType(incident.code) }}</td>
+                                    <td>{{ incident.date }}</td>
+                                    <td>{{ incident.incident }}</td>
+                                    <td>{{ neighborhoodName(incident.neighborhood_number) }}</td>
+                                    <td>{{ incident.police_grid }}</td>
+                                    <td>{{ incident.time }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-
             </div>
         </div>
     </div>

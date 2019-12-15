@@ -35,6 +35,7 @@ html, body, #app{
     float: right;
     cursor: pointer;
     margin-left: 10px;
+    padding: 3px;
 }
 #collapse:hover{
     background: #00000014;
@@ -53,15 +54,19 @@ html, body, #app{
     padding-right: 10px;
     vertical-align: top;
 }
-
-#table{
-    max-height: 70vh;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    border-top: 1px solid #DADCE0;
+#filter-button{
+    margin-top: 5px;
     font-size: 0.75em;
 }
-
+#table{
+    font-size: 0.75em;
+}
+#table-container{
+    margin-top: 3px;
+    max-height: 250px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
 
 
 /*#loading{*/
@@ -77,6 +82,7 @@ html, body, #app{
     font-weight: 700;
     font-size: 0.9rem;
     background: #00000017;
+    text-indent: 5px;
 }
 .menu-child-container{
     padding-top: 5px;
@@ -89,9 +95,10 @@ html, body, #app{
 .checkboxes{
     max-height: 100px;
     overflow-y: scroll;
+    margin: 0;
 }
 .date-time-input{
-    width: 100px;
+    width: 110px;
 }
 .legend{
     color: black;
@@ -107,28 +114,27 @@ ul{
     list-style-type: none;
     padding: 0;
 }
-input{
+input[type="text"] {
     background: none;
     border: none;
     border-bottom: 1px solid #80808082;
     padding-left: 2px;
     outline: none;
 }
-
 button{
     outline: none;
 }
-
+input[type="checkbox"] {
+    margin-right: 5px;
+}
 td, th{
     padding: 5px 0px;
     text-indent: 5px;
 }
-
 tr{
     cursor: pointer;
     border-bottom: 1px solid #DADCE0;
 }
-
 tr:hover{
     /*font-weight: 700;*/
     text-shadow: 1px 0px #000000;

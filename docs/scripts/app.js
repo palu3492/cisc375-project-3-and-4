@@ -15,24 +15,19 @@ function init() {
             address: "",
             // Table
             incidents: {},
-            visibleNeighborhoods: [],
             neighborhoods: {},
             neighborhoodsOnMap: [],
             codes: {},
-            neighborhoodMarkers: [],
             incidentMarkers: [],
-            loaded: false,
-            violentCrimes: {
-                1: ""
-            },
             dateStart: "2019-10-01",
             dateEnd: "2019-10-31",
             timeStart: "",
             timeEnd: "",
-            incidentFilter: {},
-            neighborhoodFilter: {},
-            port: 8000,
-            viewFilters: false
+            incidentFilter: [],
+            neighborhoodFilter: [],
+            port: 8090,
+            viewFilters: false,
+            limit: 10000
         },
         computed: {
             collapseImage: function(){
@@ -185,12 +180,19 @@ function getIncidents(){
         }
         filter.push(date);
     }
+    if(app.limit){
+        filter.push('limit='+app.limit)
+    }
 
-    // code incident_type, use
-    console.log(app.codes);
-    // id neighborhood_name, use name
-
-
+    // incident_type
+    if(app.incidentFilter){
+        filter.push('code='+app.incidentFilter.join(','));
+    }
+    // neighborhood_name
+    if(app.neighborhoodFilter){
+        filter.push('id='+app.neighborhoodFilter.join(','));
+    }
+    // add all filters together with '&'
     apiUrl += filter.join('&');
     console.log(apiUrl);
     $.getJSON(apiUrl)
