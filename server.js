@@ -16,7 +16,7 @@ let app = express();
 app.use(bodyParser.urlencoded({extended: true})); // allows us to get PUT request body
 app.use(cors());
 
-let port = 8000;
+let port = parseInt(process.argv[2]);
 
 // open stpaul_crime.sqlite3 database for reading and writing
 let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, err => {

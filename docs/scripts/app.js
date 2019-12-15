@@ -19,13 +19,14 @@ function init() {
             neighborhoodsOnMap: [],
             codes: {},
             incidentMarkers: [],
+            neighborhoodMarkers: {},
             dateStart: "2019-10-01",
             dateEnd: "2019-10-31",
             timeStart: "",
             timeEnd: "",
             incidentFilter: [],
             neighborhoodFilter: [],
-            port: 8090,
+            port: 8000,
             portSupplied: false,
             viewFilters: false,
             limit: 10000,
@@ -109,11 +110,11 @@ function createLeafletMap(){
     let stPaulLatLng = [app.latitude, app.longitude]; // Latitude and longitude of St. Paul
     // Create map with custom settings
     map = L.map('map', {
-        minZoom: 12,
+        minZoom: 13,
         maxZoom: 18,
         maxBounds: [[44.875822, -92.984848],[44.99564, -93.229122]],
         center: stPaulLatLng,
-        zoom: 12,
+        zoom: 13,
         zoomControl: false
     });
     // Set map layers to mapbox
@@ -186,7 +187,7 @@ function addBoundary(){
 }
 
 function getIncidents(){
-    let apiUrl = 'http://localhost:8000/incidents?';
+    let apiUrl = 'http://localhost:'+app.port+'/incidents?';
     let filter = [];
     if(app.dateStart){
         let date = 'start_date='+app.dateStart;
@@ -205,13 +206,12 @@ function getIncidents(){
     if(app.limit){
         filter.push('limit='+app.limit)
     }
-
     // incident_type
-    if(app.incidentFilter){
+    if(app.incidentFilter.length > 0){
         filter.push('code='+app.incidentFilter.join(','));
     }
     // neighborhood_name
-    if(app.neighborhoodFilter){
+    if(app.neighborhoodFilter.length > 0){
         filter.push('id='+app.neighborhoodFilter.join(','));
     }
     // add all filters together with '&'
@@ -220,11 +220,24 @@ function getIncidents(){
     $.getJSON(apiUrl)
         .then(data => {
             app.incidents = data;
+            addCrimeAmounts();
         });
 }
 
+function addCrimeAmounts(){
+    for(let i in app.incidents){
+        let n = app.incidents[i].neighborhood_number;
+        app.neighborhoods[n].count += 1;
+    }
+    for(let n in app.neighborhoodMarkers){
+        let popup = app.neighborhoodMarkers[n].getPopup();
+        let count = app.neighborhoods[n].count;
+        popup.setContent(popup.getContent()+' <b>('+count+')</b>');
+    }
+}
+
 function getCodes(){
-    let apiUrl = 'http://localhost:8000/codes';
+    let apiUrl = 'http://localhost:'+app.port+'/codes';
     $.getJSON(apiUrl)
         .then(data => {
             for(let c in data){
@@ -238,87 +251,104 @@ function populateNeighborhoods(){
         1: {
             name: "Conway/Battlecreek/Highwood",
             latitude: 44.956758,
-            longitude: -93.015139
+            longitude: -93.015139,
+            count: 0
         },
         2: {
             name: "Greater East Side",
             latitude: 44.977519,
-            longitude: -93.025290
+            longitude: -93.025290,
+            count: 0
         },
         3: {
             name: "West Side",
             latitude: 44.931369,
-            longitude: -93.082249
+            longitude: -93.082249,
+            count: 0
         },
         4: {
             name: "Dayton's Bluff",
             latitude: 44.957164,
-            longitude: -93.057100
+            longitude: -93.057100,
+            count: 0
         },
         5: {
             name: "Payne/Phalen",
             latitude: 44.978208,
-            longitude: -93.069673
+            longitude: -93.069673,
+            count: 0
         },
         6: {
             name: "North End",
             latitude: 44.977405,
-            longitude: -93.110969
+            longitude: -93.110969,
+            count: 0
         },
         7: {
             name: "Thomas/Dale(Frogtown)",
             latitude: 44.960265,
-            longitude: -93.118686
+            longitude: -93.118686,
+            count: 0
         },
         8: {
             name: "Summit/University",
             latitude: 44.948581,
-            longitude: -93.128205
+            longitude: -93.128205,
+            count: 0
         },
         9: {
             name: "West Seventh",
             latitude: 44.931735,
-            longitude: -93.119224
+            longitude: -93.119224,
+            count: 0
         },
         10: {
             name: "Como",
             latitude: 44.982860,
-            longitude: -93.150844
+            longitude: -93.150844,
+            count: 0
         },
         11: {
             name: "Hamline/Midway",
             latitude: 44.962891,
-            longitude: -93.167436
+            longitude: -93.167436,
+            count: 0
         },
         12: {
             name: "St. Anthony",
             latitude: 44.973546,
-            longitude: -93.195991
+            longitude: -93.195991,
+            count: 0
         },
         13: {
             name: "Union Park",
             latitude: 44.948401,
-            longitude: -93.174050
+            longitude: -93.174050,
+            count: 0
         },
         14: {
             name: "Macalester-Groveland",
             latitude: 44.934301,
-            longitude: -93.175363
+            longitude: -93.175363,
+            count: 0
         },
         15: {
             name: "Highland",
             latitude: 44.911489,
-            longitude: -93.172075
+            longitude: -93.172075,
+            count: 0
         },
         16: {
             name: "Summit Hill",
             latitude: 44.937493,
-            longitude: -93.136353
+            longitude: -93.136353,
+            count: 0
         },
         17: {
             name: "Capitol River",
             latitude: 44.950459,
-            longitude: -93.096462
+            longitude: -93.096462,
+            count: 0
         }
     }
 }
@@ -417,15 +447,11 @@ function neighborhoodsPopups(){
         let name = app.neighborhoods[n].name;
         let popup = L.popup({closeOnClick: false, autoClose: false}).setContent(name);
         let marker = L.marker(latLng, {title: name, icon:neighborhoodIcon}).bindPopup(popup).addTo(map).openPopup();
-        // app.neighborhoodMarkers.push(marker);
+        app.neighborhoodMarkers[n] = marker;
     }
 }
 
 function neighborhoodUpdate(){
     updateNeighborhoodsOnMap();
     neighborhoodsPopups();
-}
-
-function filter(){
-
 }
