@@ -85,7 +85,7 @@ function init() {
                     return "color: #6b0000;"
                 } else if (600 <= code && code <= 1436){
                     // property (yellow)
-                    return "color: #acb900;"
+                    return "color: #d2c400;"
                 }
                 // other (green)
                 return "color: #0e6500;"
@@ -109,17 +109,17 @@ function createLeafletMap(){
     let stPaulLatLng = [app.latitude, app.longitude]; // Latitude and longitude of St. Paul
     // Create map with custom settings
     map = L.map('map', {
-        minZoom: 13,
-        maxZoom: 17,
+        minZoom: 12,
+        maxZoom: 18,
         maxBounds: [[44.875822, -92.984848],[44.99564, -93.229122]],
         center: stPaulLatLng,
-        zoom: 13,
+        zoom: 12,
         zoomControl: false
     });
     // Set map layers to mapbox
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        maxZoom: 17,
+        maxZoom: 18,
         id: 'mapbox/streets-v11',
         accessToken: 'pk.eyJ1IjoiYWpwMCIsImEiOiJjazN4cGd4MGQxNW1hM3F0NnU5M3Jiem80In0.71DleDv1Fm-ArumkU37BjA', // token to use mapbox
     }).addTo(map);
