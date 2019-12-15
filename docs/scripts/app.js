@@ -225,6 +225,9 @@ function getIncidents(){
 }
 
 function addCrimeAmounts(){
+    for(let n in app.neighborhoods){
+        app.neighborhoods[n].count = 0;
+    }
     for(let i in app.incidents){
         let n = app.incidents[i].neighborhood_number;
         app.neighborhoods[n].count += 1;
@@ -232,7 +235,8 @@ function addCrimeAmounts(){
     for(let n in app.neighborhoodMarkers){
         let popup = app.neighborhoodMarkers[n].getPopup();
         let count = app.neighborhoods[n].count;
-        popup.setContent(popup.getContent()+' <b>('+count+')</b>');
+        let newContent = popup.getContent().replace(/\(\d+?\)/, '('+count+')');
+        popup.setContent(newContent);
     }
 }
 
@@ -445,7 +449,7 @@ function neighborhoodsPopups(){
     for(let n in app.neighborhoods){
         let latLng = [app.neighborhoods[n].latitude,  app.neighborhoods[n].longitude];
         let name = app.neighborhoods[n].name;
-        let popup = L.popup({closeOnClick: false, autoClose: false}).setContent(name);
+        let popup = L.popup({closeOnClick: false, autoClose: false}).setContent(name + ' <b>(0)</b>');
         let marker = L.marker(latLng, {title: name, icon:neighborhoodIcon}).bindPopup(popup).addTo(map).openPopup();
         app.neighborhoodMarkers[n] = marker;
     }
