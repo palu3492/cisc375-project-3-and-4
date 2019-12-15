@@ -2,7 +2,40 @@ html, body, #app{
     width: 100vw;
     height: 100vh;
 }
-
+#hide-map{
+    position: fixed;
+    background: #000000e0;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 2010;
+}
+#port-container{
+    position: fixed;
+    left: calc(100vw/2 - 123px);
+    top: 100px;
+    z-index: 2020;
+    padding: 40px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 -1px 0px rgba(0,0,0,0.02);
+    border: 5px solid black;
+}
+#port-container > input{
+    width: 50px;
+}
+#notification{
+    position: fixed;
+    left: calc(100vw/2 - 140px);
+    top: 100px;
+    z-index: 2010;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 -1px 0px rgba(0,0,0,0.02);
+    border: 5px solid black;
+}
 #map{
     width: 100vw;
     height: 100vh;
@@ -55,8 +88,10 @@ html, body, #app{
     vertical-align: top;
 }
 #filter-button{
-    margin-top: 5px;
+    margin: 10px;
+    margin-left: 1px;
     font-size: 0.75em;
+    background: #e0020214;
 }
 #table{
     font-size: 0.75em;
@@ -93,7 +128,7 @@ html, body, #app{
     display: block;
 }
 .checkboxes{
-    max-height: 100px;
+    max-height: 150px;
     overflow-y: scroll;
     margin: 0;
 }

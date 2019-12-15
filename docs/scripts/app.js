@@ -26,8 +26,11 @@ function init() {
             incidentFilter: [],
             neighborhoodFilter: [],
             port: 8090,
+            portSupplied: false,
             viewFilters: false,
-            limit: 10000
+            limit: 10000,
+            showNotification: false,
+            notification: ""
         },
         computed: {
             collapseImage: function(){
@@ -39,7 +42,11 @@ function init() {
         },
         methods: {
             toggleMenu: function(){
-                this.showMenu = !this.showMenu;
+                if(this.portSupplied) {
+                    this.showMenu = !this.showMenu;
+                } else {
+                    alert('Enter port!')
+                }
             },
             // When 'Go' is pressed
             changeLatLng: function() {
@@ -61,16 +68,27 @@ function init() {
                 });
                 alert('Incident markers removed');
             },
-            violentCrimeBg: function(code){
+            crimeTypeBackground: function(code){
                 if(110 <= code && code <= 566){
-                    // violent
+                    // violent (red)
                     return "background: #ffaaaa;;"
                 } else if (600 <= code && code <= 1436){
-                    // property
+                    // property (yellow)
                     return "background: #ffffaa;"
                 }
-                // other
+                // other (green)
                 return "background: #aaffaa;"
+            },
+            crimeTypeColor: function(code){
+                if(110 <= code && code <= 566){
+                    // violent (red)
+                    return "color: #6b0000;"
+                } else if (600 <= code && code <= 1436){
+                    // property (yellow)
+                    return "color: #acb900;"
+                }
+                // other (green)
+                return "color: #0e6500;"
             }
         }
     });
@@ -78,6 +96,10 @@ function init() {
     createLeafletMap();
     populateNeighborhoods();
     neighborhoodUpdate();
+}
+
+function portSubmit(){
+    app.portSupplied = true;
     getCodes();
     getIncidents();
 }

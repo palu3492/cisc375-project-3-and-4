@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- 🚢🚢🚢🚢🛳️️ -->
 <head>
     <title>St. Paul Crime Map</title>
     <!-- Required meta tags -->
@@ -25,7 +26,15 @@
 
 <body onload="init()">
     <div id="app">
-        <!--<div id="loading" v-if="!loaded"><img src="images/spinner.svg"/></div>-->
+        <div id="hide-map" v-if="!portSupplied"></div>
+        <div id="notification" v-if="showNotification">
+            {{ notification }}
+        </div>
+        <div id="port-container" v-if="!portSupplied">
+            Port:
+            <input type="text" v-model="port"/>
+            <button type="button" @click="portSubmit">Submit</button>
+        </div>
         <div id="map"></div>
         <div id="menu">
             <div id="menu-title">
@@ -33,7 +42,7 @@
                 <h4>St. Paul Crime Map</h4>
                 <img src="images/arrows.png" id="collapse" @click="toggleMenu"  :style="collapseImage"/>
             </div>
-            <div id="menu-body" v-if="showMenu">
+            <div id="menu-body" v-if="showMenu && portSupplied">
                 <div class="title">Map Controls</div>
                 <div id="map-control" class="menu-child-container">
                     Latitude
@@ -52,7 +61,7 @@
                         <span class="filter-title">Incident type</span>
                         <ul class="checkboxes">
                             <li v-for="(name, code) in codes">
-                                <input type="checkbox" :value="code" v-model="incidentFilter">{{ name }}
+                                <input type="checkbox" :value="code" v-model="incidentFilter"><span :style="crimeTypeColor(code)">{{ name }}</span>
                             </li>
                         </ul>
                     </div>
@@ -74,6 +83,7 @@
                         <input type="text" class="date-time-input" placeholder="Start" v-model="timeStart"/>
                         <input type="text" class="date-time-input" placeholder="End" v-model="timeEnd"/>
                         <br/>
+                        <span class="filter-title">Limit incidents</span>
                         Limit
                         <input type="text" class="date-time-input" placeholder="" v-model="limit"/>
                         <br/>
@@ -105,7 +115,7 @@
                             </thead>
                             <tbody>
                                 <tr v-if="incidents.length < 1"><td>No neighborhoods visible on map</td></tr>
-                                <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block, incident.date, incident.time, incident.incident, incident.code);" :style="violentCrimeBg(incident.code)">
+                                <tr v-for="incident in incidents" v-if="visible(incident.neighborhood_number)" @click="addIncidentMarker(incident.block, incident.date, incident.time, incident.incident, incident.code);" :style="crimeTypeBackground(incident.code)">
                                     <td>{{ incident.block }}</td>
                                     <td>{{ incidentType(incident.code) }}</td>
                                     <td>{{ incident.date }}</td>
