@@ -147,6 +147,24 @@ html, body, #app{
     margin: 5px;
     margin-right: 18px;
 }
+
+/*About Page Styling*/
+.aboutStyle{
+    text-align:center;
+}
+
+.aboutStyle ul li{
+    text-align: center;
+    list-style: inside;
+    list-style-position: inside;
+}
+
+.aboutStyle ol li{
+    text-align: center;
+    list-style-position: inside;
+  }
+/*About Page Styling End*/
+
 ul{
     list-style-type: none;
     padding: 0;
