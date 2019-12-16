@@ -41,6 +41,10 @@
                 <img src="images/mapIcon.png"/>
                 <h4>St. Paul Crime Map</h4>
                 <img src="images/arrows.png" id="collapse" @click="toggleMenu"  :style="collapseImage"/>
+                <div v-if="showMenu">
+                    <button onclick=" window.open('about.html','_blank')"
+                        class="float-right submit-button">About</button>
+                </div>
             </div>
             <div id="menu-body" v-if="showMenu && portSupplied">
                 <div class="title">Map Controls</div>
