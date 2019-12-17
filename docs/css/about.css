@@ -23,9 +23,3 @@ h3{
 table, tbody, tr{
     width: 100%;
 }
-td{
-    width: 50%;
-}
-td > * {
-    display: inline-block;
-}
