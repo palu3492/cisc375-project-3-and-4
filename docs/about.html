@@ -1,29 +1,43 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="css/about.css" />
+        <title>About Us</title>
+    </head>
+    <body>
+        <div class="container">
+            <h2>About Us</h2>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="css/style.css" />
-    <title>About Us</title>
-</head>
+            <h3 class="pl-2">Team Members</h3>
+            <table>
+                <tbody>
+                    <tr>
+                        <td style="display: flex; flex-direction:row;float:left">
+                            <img src="images/pictureOfAlex.png" class="pr-2 pb-2" height="150px" width="auto">
+                            <div>
+                                <h4>Alex P</h4>
+                                <p>I am a 21 student at the University of St. Thomas studying Computer Science.
+                                My interests are programming, game development, and lacrosse.
+                                I also enjoy coffee and drink way too many cups a day.</p>
+                            </div>
+                        </td>
+                        <td style="display: flex; flex-direction:row;float:left">
+                            <img src="images/pictureOfDaniel.png" class="pr-2 pb-2" height="150px" width="auto">
+                            <div>
+                                <h4>Daniel T</h4>
+                                <p>I am 21 years old and live in Maple Grove. My major is computer science and my interests
+                                    are soccer, traveling, and programming.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
 
-<body>
-    <div class="aboutStyle">
-        <h1>About Us</h1>
-
-        <h2>Team Members</h2>
-        <h2>Alex P</h1>
-            <p1>Biography</p1>
-
-            <h2>Daniel T</h2>
-            <p1>I am 21 years old and live in Maple Grove. My major is computer science and my interests
-                are soccer, traveling, and programming.
-            </p1>
-
-            <h3>Frameworks Used In This Project</h3>
+            <h3 class="pl-2">Frameworks and APIs Used in This Project</h3>
             <ul>
                 <li>Leaflet</li>
                 <li>Nominatim</li>
@@ -32,7 +46,12 @@
                 <li>Vue JS</li>
             </ul>
 
-            <h2>Six Interesting Findings</h2>
+            <h3 class="pl-2">Video Demo</h3>
+            <iframe width="450" height="267" src="https://www.youtube.com/embed/" frameborder="0"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+
+            <h3  class="pl-2">Six Interesting Findings</h3>
             <ol>
                 <li>In the past 5 years, Dayton's Bluff has had the most murders than any other neighborhood.</li>
                 <li>The most recent violent crime that occured near the University of St. Thomas was a burglary that
@@ -42,9 +61,6 @@
                 <li></li>
                 <li></li>
             </ol>
-        </h2>
-    </div>
-
-</body>
-
+        </div>
+    </body>
 </html>
