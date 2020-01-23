@@ -370,5 +370,5 @@ function insertNewIncident(body){
     db.run("INSERT INTO Incidents VALUES (?, ?, ?, ?, ?, ?, ?)", values);
 }
 
-console.log('Listening on port ' + port);
-let server = app.listen(port);
+console.log('Listening on port ' + PORT);
+let server = app.listen(PORT);
