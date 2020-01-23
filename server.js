@@ -34,6 +34,10 @@ let serializer = new EasyXml({
     manifest: true
 });
 
+app.get('/', (req, res) => {
+    respondWithData(res, 'text/plain', 'App online')
+});
+
 // GET /codes
 // Responds with a JSON or XML string with codes mapped to their corresponding incident type
 // ?code=110,700, default all codes
