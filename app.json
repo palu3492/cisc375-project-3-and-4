@@ -1,0 +1,6 @@
+{
+  "name": "St. Paul Crime Map",
+  "description": "An explorable map of St. Paul crimes",
+  "repository": "https://github.com/palu3492/cisc375-project-3-and-4",
+  "keywords": ["node", "express", "heroku"]
+}

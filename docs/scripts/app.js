@@ -64,7 +64,7 @@ function init() {
                 return this.codes[code]
             },
             removeIncidentMarkers: function(){
-                app.incidentMarkers.forEach(marker => {
+                this.incidentMarkers.forEach(marker => {
                     marker.remove();
                 });
                 alert('Incident markers removed');
@@ -90,6 +90,11 @@ function init() {
                 }
                 // other (green)
                 return "color: #0e6500;"
+            },
+            portSubmit: function(){
+                this.portSupplied = true;
+                getCodes();
+                getIncidents();
             }
         }
     });
@@ -99,11 +104,11 @@ function init() {
     neighborhoodUpdate();
 }
 
-function portSubmit(){
-    app.portSupplied = true;
-    getCodes();
-    getIncidents();
-}
+// function portSubmit(){
+//     app.portSupplied = true;
+//     getCodes();
+//     getIncidents();
+// }
 
 let map;
 function createLeafletMap(){
@@ -187,7 +192,7 @@ function addBoundary(){
 }
 
 function getIncidents(){
-    let apiUrl = 'http://cisc-dean.stthomas.edu:'+app.port+'/incidents?';
+    let apiUrl = 'http://localhost:'+app.port+'/incidents?';
     let filter = [];
     if(app.dateStart){
         let date = 'start_date='+app.dateStart;
@@ -241,7 +246,7 @@ function addCrimeAmounts(){
 }
 
 function getCodes(){
-    let apiUrl = 'http://cisc-dean.stthomas.edu:'+app.port+'/codes';
+    let apiUrl = 'http://localhost:'+app.port+'/codes';
     $.getJSON(apiUrl)
         .then(data => {
             for(let c in data){
@@ -358,15 +363,15 @@ function populateNeighborhoods(){
 }
 
 // Get the latitude and longitude for neighborhood using neighborhood name
-function getNeighborhoodLatLng(neighborhoodName){
-    // neighborhood = 'Greater East Side'
-    let country = 'United States',
-        state = 'Minnesota',
-        city = 'St. Paul';
-    let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country='+country+'&state='+state+'&q='+neighborhoodName;
-    // return promise
-    return $.getJSON(apiUrl);
-}
+// function getNeighborhoodLatLng(neighborhoodName){
+//     // neighborhood = 'Greater East Side'
+//     let country = 'United States',
+//         state = 'Minnesota',
+//         city = 'St. Paul';
+//     let apiUrl = 'https://nominatim.openstreetmap.org/search?format=json&country='+country+'&state='+state+'&q='+neighborhoodName;
+//     // return promise
+//     return $.getJSON(apiUrl);
+// }
 
 function updateNeighborhoodsOnMap() {
     app.neighborhoodsOnMap = [];
