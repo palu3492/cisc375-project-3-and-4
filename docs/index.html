@@ -26,27 +26,27 @@
 
     <body onload="init()">
         <div id="app">
-            <div id="hide-map" v-if="!portSupplied"></div>
-            <div id="notification" v-if="showNotification">
-                {{ notification }}
-            </div>
-            <div id="port-container" v-if="!portSupplied">
-                Port:
-                <input type="text" v-model="port"/>
-                <button type="button" @click="portSubmit">Submit</button>
-            </div>
+            <!--<div id="hide-map" v-if="!portSupplied"></div>-->
+            <!--<div id="notification" v-if="showNotification">-->
+                <!--{{ notification }}-->
+            <!--</div>-->
+            <!--<div id="port-container" v-if="!portSupplied">-->
+                <!--Port:-->
+                <!--<input type="text" v-model="port"/>-->
+                <!--<button type="button" @click="portSubmit">Submit</button>-->
+            <!--</div>-->
             <div id="map"></div>
             <div id="menu">
                 <div id="menu-title">
                     <img src="images/mapIcon.png"/>
                     <h4>St. Paul Crime Map</h4>
-                    <img src="images/arrows.png" id="collapse" @click="toggleMenu"  :style="collapseImage"/>
+                    <img src="images/arrows.png" id="collapse" @click="toggleMenu" :style="collapseImage"/>
                     <div v-if="showMenu">
                         <a href="about.html" class="float-right">About</a>
                     </div>
                 </div>
                 <transition name="slide-fade">
-                    <div id="menu-body" v-if="showMenu && portSupplied">
+                    <div id="menu-body" v-if="showMenu">
                         <div class="title">Map Controls</div>
                         <div id="map-control" class="menu-child-container">
                             Latitude
