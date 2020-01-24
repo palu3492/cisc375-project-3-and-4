@@ -32,6 +32,7 @@ function init() {
             limit: 10000,
             // showNotification: false,
             // notification: ""
+            loading: true,
         },
         computed: {
             collapseImage: function(){
@@ -225,6 +226,7 @@ function getIncidents(){
         .then(data => {
             app.incidents = data;
             addCrimeAmounts();
+            app.loading = false;
         });
 }
 
@@ -251,6 +253,7 @@ function getCodes(){
             for(let c in data){
                 app.codes[c.substring(1)] = data[c];
             }
+            app.loading = false;
         });
 }
 

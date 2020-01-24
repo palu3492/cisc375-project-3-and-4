@@ -35,8 +35,13 @@
                 <!--<input type="text" v-model="port"/>-->
                 <!--<button type="button" @click="portSubmit">Submit</button>-->
             <!--</div>-->
+            <div id="loading" v-if="loading">
+                <div id="loading-gif">
+                    <img src="images/loading.gif"/>
+                </div>
+            </div>
             <div id="map"></div>
-            <div id="menu">
+            <div id="menu" v-if="!loading">
                 <div id="menu-title">
                     <img src="images/mapIcon.png"/>
                     <h4>St. Paul Crime Map</h4>
